@@ -1,0 +1,28 @@
+{
+  "identifier" : "AE3A8B7C-F901-4D2E-9A6B-1234567890AB",
+  "nonConsumableIAP" : [
+    {
+      "displayPrice" : "2.99",
+      "familyShareable" : false,
+      "internalID" : "com.blindloup.premium",
+      "localizations" : [
+        {
+          "description" : "Accès à vie à toutes les fonctionnalités premium de BlindLoup : jusqu'à 8 joueurs, 6 morceaux par joueur, historique des parties.",
+          "displayName" : "BlindLoup Premium",
+          "locale" : "fr_FR"
+        }
+      ],
+      "productID" : "com.blindloup.premium",
+      "referenceName" : "BlindLoup Premium",
+      "type" : "NonConsumable"
+    }
+  ],
+  "settings" : {
+    "_storeKitErrors" : []
+  },
+  "version" : {
+    "major" : 3,
+    "minor" : 0,
+    "patch" : 0
+  }
+}
