@@ -24,7 +24,9 @@ final class AudioPlayerService {
             )
             try AVAudioSession.sharedInstance().setActive(true)
         } catch {
+            #if DEBUG
             print("AudioSession error: \(error)")
+            #endif
         }
     }
 

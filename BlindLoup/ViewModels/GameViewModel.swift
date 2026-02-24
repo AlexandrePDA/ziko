@@ -32,7 +32,17 @@ final class GameViewModel {
     var finalRanking: [Player] {
         players.sorted {
             if $0.score != $1.score { return $0.score > $1.score }
-            return bluffCount(for: $0) > bluffCount(for: $1)
+            return undetectedRoundCount(for: $0) > undetectedRoundCount(for: $1)
+        }
+    }
+
+    var invincibilityWinners: [Player] {
+        players.filter { player in
+            let ownedRounds = rounds.filter { $0.track.ownerID == player.id }
+            guard !ownedRounds.isEmpty else { return false }
+            return !ownedRounds.contains { round in
+                round.votes.contains { $0.value == player.id && $0.key != player.id }
+            }
         }
     }
 
@@ -59,14 +69,16 @@ final class GameViewModel {
 
     // MARK: - Track selection
 
-    func addTrack(_ track: Track, to playerID: UUID) {
-        guard let idx = players.firstIndex(where: { $0.id == playerID }) else { return }
+    @discardableResult
+    func addTrack(_ track: Track, to playerID: UUID) -> Bool {
+        guard let idx = players.firstIndex(where: { $0.id == playerID }) else { return false }
         let limit = storeService.isPremium ? (GameConfig.premiumTracksOptions.last ?? 6) : GameConfig.freeTracksPerPlayer
-        guard players[idx].selectedTracks.count < limit else { return }
-        guard !players[idx].selectedTracks.contains(where: { $0.id == track.id }) else { return }
+        guard players[idx].selectedTracks.count < limit else { return false }
+        guard !players[idx].selectedTracks.contains(where: { $0.id == track.id }) else { return false }
         var updated = track
         updated.ownerID = playerID
         players[idx].selectedTracks.append(updated)
+        return true
     }
 
     func removeTrack(_ track: Track, from playerID: UUID) {
@@ -83,6 +95,9 @@ final class GameViewModel {
     func advancePhase() {
         switch phase {
         case .home:
+            phase = .classicMenu
+
+        case .classicMenu:
             players = []
             phase = .setup
 
@@ -215,10 +230,11 @@ final class GameViewModel {
         rounds = allTracks.shuffled().map { GameRound(track: $0) }
     }
 
-    private func bluffCount(for player: Player) -> Int {
+    /// Rounds where the player was neither the owner nor suspected by anyone — used as tiebreaker.
+    private func undetectedRoundCount(for player: Player) -> Int {
         rounds.filter { round in
             round.track.ownerID != player.id &&
-            round.votes.values.contains(player.id) == false
+            !round.votes.values.contains(player.id)
         }.count
     }
 

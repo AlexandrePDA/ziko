@@ -41,6 +41,10 @@ final class StoreKitService {
     func activatePremiumForTesting() {
         setPremium(true)
     }
+
+    func deactivatePremiumForTesting() {
+        setPremium(false)
+    }
 #endif
 
     func purchasePremium() async throws {
@@ -92,7 +96,7 @@ final class StoreKitService {
         }
     }
 
-    func setPremium(_ value: Bool) {
+    private func setPremium(_ value: Bool) {
         isPremium = value
         UserDefaults.standard.set(value, forKey: StorageKeys.isPremium)
     }

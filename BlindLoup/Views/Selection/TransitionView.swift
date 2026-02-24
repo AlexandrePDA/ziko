@@ -10,16 +10,22 @@ struct TransitionView: View {
 
     var isFirstPlayer: Bool { nextPlayerIndex == 0 }
 
-    var message: String {
+    var messageLabel: Text {
+        let name = nextPlayer?.name ?? ""
+        let color = Color.playerColor(nextPlayer?.colorIndex ?? 0)
+        let nameText = Text(name).foregroundStyle(color)
+        let suffix = Text(".\nRegardez ailleurs !").foregroundStyle(Color.appWhite)
         if isFirstPlayer {
-            return "Passez le téléphone à \(nextPlayer?.name ?? "").\nRegardez ailleurs !"
+            return Text("Passez le téléphone à ").foregroundStyle(Color.appWhite)
+                + nameText + suffix
         } else {
-            return "Au tour de \(nextPlayer?.name ?? "").\nRegardez ailleurs !"
+            return Text("Au tour de ").foregroundStyle(Color.appWhite)
+                + nameText + suffix
         }
     }
 
     var body: some View {
-        ProtectionScreen(message: message) {
+        ProtectionScreen(message: messageLabel) {
             vm.advancePhase()
         }
     }

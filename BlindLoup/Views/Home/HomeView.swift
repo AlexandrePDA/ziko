@@ -5,9 +5,9 @@ struct HomeView: View {
     @Environment(StoreKitService.self) private var store
 
     @State private var showPremiumSheet    = false
-    @State private var showHowToPlay       = false
-    @State private var showHistory         = false
+    @State private var showSettings        = false
     @State private var showRolesComingSoon = false
+    @State private var showHowToPlay       = false
 
     var body: some View {
         ZStack {
@@ -16,35 +16,28 @@ struct HomeView: View {
             VStack(spacing: 0) {
 
                 // ── Top bar ──────────────────────────────────────
-                HStack {
-                    Button(action: { showHowToPlay = true }) {
-                        HStack(spacing: 5) {
-                            Image(systemName: "questionmark.circle")
-                            Text("Comment jouer ?")
-                                .font(.subheadline)
-                        }
-                        .foregroundStyle(Color.appGrey)
-                    }
-
+                HStack(spacing: 12) {
                     Spacer()
 
-                    Button(action: {
-                        store.isPremium ? (showHistory = true) : (showPremiumSheet = true)
-                    }) {
+                    // Badge Premium
+                    Button(action: { showPremiumSheet = true }) {
                         HStack(spacing: 5) {
-                            Image(systemName: "clock.arrow.circlepath")
-                            Text("Historique")
-                                .font(.subheadline)
+                            Image(systemName: "crown.fill")
+                            Text(store.isPremium ? "Premium" : "Passer Premium")
+                                .font(.caption.weight(.semibold))
                         }
-                        .foregroundStyle(store.isPremium ? Color.appGrey : Color.appAccent.opacity(0.8))
-                        .overlay(alignment: .topTrailing) {
-                            if !store.isPremium {
-                                Image(systemName: "lock.fill")
-                                    .font(.system(size: 8))
-                                    .foregroundStyle(Color.appAccent)
-                                    .offset(x: 4, y: -4)
-                            }
-                        }
+                        .foregroundStyle(Color.appAccent)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 6)
+                        .background(Color.appAccent.opacity(0.12))
+                        .clipShape(Capsule())
+                    }
+
+                    // Roue crantée — Paramètres
+                    Button(action: { showSettings = true }) {
+                        Image(systemName: "gearshape.fill")
+                            .font(.title3)
+                            .foregroundStyle(Color.appGrey)
                     }
                 }
                 .padding(.horizontal, 24)
@@ -53,14 +46,9 @@ struct HomeView: View {
                 Spacer()
 
                 // ── Logo ─────────────────────────────────────────
-                VStack(spacing: 2) {
-                    Text("BLIND")
-                        .font(.system(size: 52, weight: .black))
-                        .foregroundStyle(Color.appAccent)
-                    Text("LOUP")
-                        .font(.system(size: 52, weight: .black))
-                        .foregroundStyle(Color.appWhite)
-                }
+                (Text("BLIND").foregroundStyle(Color.appAccent)
+                 + Text(" LOUP").foregroundStyle(Color.appWhite))
+                    .font(.system(size: 52, weight: .black))
 
                 Text("Choisis ton mode de jeu")
                     .font(.subheadline)
@@ -86,33 +74,12 @@ struct HomeView: View {
                 .padding(.horizontal, 20)
 
                 Spacer()
-
-                // ── Badge premium ────────────────────────────────
-                if !store.isPremium {
-                    Button(action: { showPremiumSheet = true }) {
-                        HStack(spacing: 6) {
-                            Image(systemName: "crown.fill")
-                            Text("Passer Premium")
-                        }
-                        .font(.subheadline)
-                        .foregroundStyle(Color.appAccent)
-                    }
-                    .padding(.bottom, 40)
-                } else {
-                    HStack(spacing: 6) {
-                        Image(systemName: "crown.fill")
-                        Text("Premium actif")
-                    }
-                    .font(.subheadline)
-                    .foregroundStyle(Color.appAccent)
-                    .padding(.bottom, 40)
-                }
             }
         }
         // ── Sheets ───────────────────────────────────────────────
-        .sheet(isPresented: $showHowToPlay)    { HowToPlayView() }
         .sheet(isPresented: $showPremiumSheet) { PremiumPaywallView() }
-        .sheet(isPresented: $showHistory)      { GameHistoryView() }
+        .sheet(isPresented: $showSettings)     { SettingsView() }
+        .sheet(isPresented: $showHowToPlay)    { HowToPlayView() }
         // ── Alerts ───────────────────────────────────────────────
         .alert("Bientôt disponible", isPresented: $showRolesComingSoon) {
             Button("OK", role: .cancel) {}
@@ -120,8 +87,7 @@ struct HomeView: View {
             Text("Le mode Loup-Garou avec rôles secrets arrive très prochainement. Reste connecté !")
         }
         .onAppear {
-            let seen = UserDefaults.standard.bool(forKey: StorageKeys.hasSeenTutorial)
-            if !seen {
+            if !UserDefaults.standard.bool(forKey: StorageKeys.hasSeenTutorial) {
                 showHowToPlay = true
                 UserDefaults.standard.set(true, forKey: StorageKeys.hasSeenTutorial)
             }

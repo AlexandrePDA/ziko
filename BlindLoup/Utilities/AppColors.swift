@@ -9,25 +9,31 @@ extension Color {
     // MARK: - Text
     static let appWhite      = Color(hex: "#FFFFFF")
     static let appGrey       = Color(hex: "#8E8E93")
+    static let appGreyLight  = Color(hex: "#C4C4C9")   // gris clair proche du blanc
 
-    // MARK: - Accent (remplace orange)
+    // MARK: - Accent
     static let appAccent     = Color(hex: "#9D9FE5")   // pervenche — CTAs
 
-    // MARK: - Aliases rétro-compatibles (évite de tout casser)
+    // MARK: - Couleurs scoring (fixes, indépendantes des joueurs)
+    static let scorePositive = Color(hex: "#9D9FE5")   // pervenche — points positifs
+    static let scorePenalty  = Color(hex: "#E86060")   // rouge — pénalité
+    static let scoreBonus    = Color(hex: "#7BC47B")   // vert sauge — bonus
+
+    // MARK: - Aliases rétro-compatibles
     static var appBlack:  Color { appBackground }
     static var appNavy:   Color { appSurface }
     static var appOrange: Color { appAccent }
 
-    // MARK: - Couleurs joueurs (8 teintes vives sur fond sombre)
+    // MARK: - Couleurs joueurs (8 teintes pastels, distinctes des couleurs scoring)
     static let playerColors: [Color] = [
-        Color(hex: "#7BC47B"),   // 0 — vert sauge
-        Color(hex: "#B09FD8"),   // 1 — violet doux
-        Color(hex: "#E87ACB"),   // 2 — rose vif
-        Color(hex: "#5B8FE8"),   // 3 — bleu royal
-        Color(hex: "#C8E020"),   // 4 — citron vert
-        Color(hex: "#E8705A"),   // 5 — corail
-        Color(hex: "#5BD4C8"),   // 6 — turquoise
-        Color(hex: "#F0C060"),   // 7 — doré
+        Color(hex: "#FFAB76"),   // 0 — saumon
+        Color(hex: "#FFE270"),   // 1 — jaune doux
+        Color(hex: "#D98AE0"),   // 2 — lilas
+        Color(hex: "#72DDD4"),   // 3 — menthe
+        Color(hex: "#FF9CC0"),   // 4 — rose poudré
+        Color(hex: "#A89EFF"),   // 5 — lavande
+        Color(hex: "#79CCFF"),   // 6 — bleu ciel
+        Color(hex: "#FFCC7A"),   // 7 — miel
     ]
 
     static func playerColor(_ index: Int) -> Color {

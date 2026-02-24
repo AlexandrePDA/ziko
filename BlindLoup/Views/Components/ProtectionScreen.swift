@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct ProtectionScreen: View {
-    let message: String
+    let message: Text
     let onReady: () -> Void
 
     @State private var opacity: Double = 0
@@ -15,10 +15,9 @@ struct ProtectionScreen: View {
                     .font(.system(size: 60))
                     .foregroundStyle(Color.appOrange)
 
-                Text(message)
+                message
                     .font(.title2)
                     .fontWeight(.semibold)
-                    .foregroundStyle(Color.appWhite)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 32)
 

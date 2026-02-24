@@ -1,12 +1,28 @@
 import SwiftUI
 
+// MARK: - Data model
+
+private enum ScoreRowStyle {
+    case accent   // pervenche — points positifs standard
+    case danger   // rouge cohérent — pénalité
+    case bonus    // vert sauge — bonus
+    case header   // séparateur de section, pas de points
+}
+
+private struct ScoreRow {
+    let label: String
+    let points: String
+    let style: ScoreRowStyle
+}
+
 private struct Slide {
     let emoji: String
     let title: String
     let subtitle: String
     let body: String
-    var scores: [(label: String, points: String, highlight: Bool)]? = nil
+    var scores: [ScoreRow]? = nil
     var tip: String? = nil
+    var tipEmoji: String = "💡"
 }
 
 private let slides: [Slide] = [
@@ -21,7 +37,8 @@ private let slides: [Slide] = [
         title: "Sélection secrète",
         subtitle: "Étape 1",
         body: "Chacun choisit ses morceaux en secret pendant que les autres regardent ailleurs. Mélange tes vrais coups de cœur avec des pièges — plus tu brouilles les pistes, plus tu gagnes !",
-        tip: "Le propriétaire vote aussi pendant la partie pour brouiller les pistes."
+        tip: "Une musique ne peut être sélectionnée qu'une fois par joueur, mais plusieurs joueurs peuvent avoir les mêmes goûts...",
+        tipEmoji: "👀"
     ),
     Slide(
         emoji: "🎧",
@@ -33,7 +50,8 @@ private let slides: [Slide] = [
         emoji: "🗳️",
         title: "Le vote",
         subtitle: "Étape 3",
-        body: "Après chaque morceau, chaque joueur vote pour désigner le propriétaire. Impossible de voter pour soi-même — à toi de jouer !"
+        body: "Après chaque morceau, chaque joueur vote pour désigner le propriétaire. Impossible de voter pour soi-même — à toi de jouer !",
+        tip: "Le propriétaire vote aussi pendant la partie pour brouiller les pistes."
     ),
     Slide(
         emoji: "🏆",
@@ -41,14 +59,40 @@ private let slides: [Slide] = [
         subtitle: "Étape 4",
         body: "Le score récompense autant les bons détectives que les grands bluffeurs.",
         scores: [
-            ("Personne ne te trouve 🕵️", "+30 pts", true),
-            ("Tout le monde te trouve 😬", "-10 pts", false),
-            ("Tu trouves le propriétaire 🎯", "+10 pts", false),
-            ("Seul(e) à avoir trouvé 🎯🔥", "+30 pts (10+20)", false),
-            ("Aucune de tes musiques trouvées ✨", "Bonus +20 pts", true),
+            ScoreRow(label: "Personne ne te trouve 🕵️",       points: "+30 pts", style: .accent),
+            ScoreRow(label: "Tu trouves le propriétaire 🎯",    points: "+10 pts", style: .accent),
+            ScoreRow(label: "Tout le monde te trouve 😬",       points: "−10 pts", style: .danger),
+            ScoreRow(label: "BONUS MANCHE",                      points: "",        style: .header),
+            ScoreRow(label: "Seul(e) à avoir trouvé 🔥",       points: "+20 pts", style: .bonus),
+            ScoreRow(label: "BONUS PARTIE",                      points: "",        style: .header),
+            ScoreRow(label: "Aucune de tes musiques trouvées ✨", points: "+20 pts", style: .bonus),
         ]
     ),
 ]
+
+// MARK: - Colors
+
+private extension ScoreRowStyle {
+    var textColor: Color {
+        switch self {
+        case .accent:  return Color.appAccent
+        case .danger:  return Color(hex: "#E86060")
+        case .bonus:   return Color.scoreBonus   // vert sauge
+        case .header:  return Color.appGrey
+        }
+    }
+
+    var backgroundColor: Color {
+        switch self {
+        case .accent:  return Color.appAccent.opacity(0.12)
+        case .danger:  return Color(hex: "#E86060").opacity(0.12)
+        case .bonus:   return Color.scoreBonus.opacity(0.12)
+        case .header:  return .clear
+        }
+    }
+}
+
+// MARK: - HowToPlayView
 
 struct HowToPlayView: View {
     @Environment(\.dismiss) private var dismiss
@@ -127,24 +171,44 @@ private struct SlideView: View {
                 .lineSpacing(4)
                 .padding(.horizontal, 32)
 
-            // Scores (slide 5 only)
+            // Scores
             if let scores = slide.scores {
-                VStack(spacing: 10) {
-                    ForEach(scores, id: \.label) { item in
-                        HStack {
-                            Text(item.label)
-                                .font(.subheadline)
-                                .foregroundStyle(Color.appWhite)
-                            Spacer()
-                            Text(item.points)
-                                .font(.subheadline)
-                                .fontWeight(.black)
-                                .foregroundStyle(item.highlight ? Color.appOrange : Color.appWhite)
+                VStack(spacing: 8) {
+                    ForEach(scores, id: \.label) { row in
+                        if row.style == .header {
+                            // Section header "BONUS"
+                            HStack {
+                                Rectangle()
+                                    .fill(Color.scoreBonus.opacity(0.4))
+                                    .frame(height: 1)
+                                Text(row.label)
+                                    .font(.caption)
+                                    .fontWeight(.bold)
+                                    .foregroundStyle(Color.scoreBonus)
+                                    .fixedSize()
+                                Rectangle()
+                                    .fill(Color.scoreBonus.opacity(0.4))
+                                    .frame(height: 1)
+                            }
+                            .padding(.top, 4)
+                        } else {
+                            HStack(alignment: .top, spacing: 12) {
+                                Text(row.label)
+                                    .font(.subheadline)
+                                    .foregroundStyle(Color.appWhite)
+                                    .fixedSize(horizontal: false, vertical: true)
+                                Spacer(minLength: 8)
+                                Text(row.points)
+                                    .font(.subheadline)
+                                    .fontWeight(.black)
+                                    .foregroundStyle(row.style.textColor)
+                                    .fixedSize(horizontal: true, vertical: false)
+                            }
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 12)
+                            .background(row.style.backgroundColor)
+                            .clipShape(RoundedRectangle(cornerRadius: 10))
                         }
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 12)
-                        .background(item.highlight ? Color.appOrange.opacity(0.12) : Color.appNavy)
-                        .clipShape(RoundedRectangle(cornerRadius: 10))
                     }
                 }
                 .padding(.horizontal, 32)
@@ -154,7 +218,7 @@ private struct SlideView: View {
             // Tip
             if let tip = slide.tip {
                 HStack(spacing: 10) {
-                    Text("💡")
+                    Text(slide.tipEmoji)
                     Text(tip)
                         .font(.caption)
                         .foregroundStyle(Color.appGrey)

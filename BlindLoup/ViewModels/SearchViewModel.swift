@@ -65,6 +65,6 @@ final class SearchViewModel {
     func clearSearch() {
         debounceTask?.cancel()
         searchText = ""
-        state = .idle
+        // state is reset to .idle via searchText didSet → scheduleSearch()
     }
 }

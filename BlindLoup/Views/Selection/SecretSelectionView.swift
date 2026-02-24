@@ -81,9 +81,7 @@ struct SecretSelectionView: View {
                         Button(action: { showSearch = true }) {
                             HStack {
                                 Image(systemName: "plus")
-                                Text(player.selectedTracks.count < tracksLimit
-                                     ? "Ajouter un morceau (\(player.selectedTracks.count)/\(tracksLimit))"
-                                     : "Remplacer un morceau")
+                                Text("Ajouter un morceau (\(player.selectedTracks.count)/\(tracksLimit))")
                             }
                             .font(.headline)
                             .foregroundStyle(Color.appOrange)

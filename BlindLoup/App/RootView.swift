@@ -12,6 +12,13 @@ struct RootView: View {
                 HomeView()
                     .transition(.opacity)
 
+            case .classicMenu:
+                ClassicModeMenuView()
+                    .transition(.asymmetric(
+                        insertion: .move(edge: .trailing),
+                        removal: .move(edge: .leading)
+                    ))
+
             case .setup:
                 PlayerSetupView()
                     .transition(.asymmetric(

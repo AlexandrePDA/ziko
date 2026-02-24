@@ -2,6 +2,7 @@ import Foundation
 
 enum GamePhase: Equatable {
     case home
+    case classicMenu
     case setup
     case secretSelection(playerIndex: Int)
     case transition(nextPlayerIndex: Int)

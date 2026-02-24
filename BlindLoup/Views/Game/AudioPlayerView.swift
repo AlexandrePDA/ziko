@@ -34,8 +34,7 @@ struct AudioPlayerView: View {
             // Controls
             HStack(spacing: 40) {
                 Button(action: {
-                    let delta = audioService.duration > 0 ? 10.0 / audioService.duration : 0
-                    audioService.seek(to: max(0, audioService.progress - delta))
+                    audioService.seek(to: max(0, audioService.progress - seekDelta()))
                 }) {
                     Image(systemName: "gobackward.10")
                         .font(.title2)
@@ -49,8 +48,7 @@ struct AudioPlayerView: View {
                 }
 
                 Button(action: {
-                    let delta = audioService.duration > 0 ? 10.0 / audioService.duration : 0
-                    audioService.seek(to: min(1, audioService.progress + delta))
+                    audioService.seek(to: min(1, audioService.progress + seekDelta()))
                 }) {
                     Image(systemName: "goforward.10")
                         .font(.title2)
@@ -65,6 +63,10 @@ struct AudioPlayerView: View {
 
     private func togglePlayPause() {
         if audioService.isPlaying { audioService.pause() } else { audioService.resume() }
+    }
+
+    private func seekDelta() -> Double {
+        audioService.duration > 0 ? 10.0 / audioService.duration : 0
     }
 
     private func startPlayback() {

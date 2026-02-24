@@ -57,8 +57,8 @@ struct TrackSearchView: View {
                                 .listRowSeparatorTint(Color.appBlack)
                                 .onTapGesture {
                                     if !selected {
-                                        vm.addTrack(track, to: playerID)
-                                        dismiss()
+                                        let added = vm.addTrack(track, to: playerID)
+                                        if added { dismiss() }
                                     }
                                 }
                         }

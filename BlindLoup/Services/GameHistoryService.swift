@@ -13,10 +13,13 @@ struct GameSession: Codable, Identifiable {
 
 final class GameHistoryService {
     static let shared = GameHistoryService()
+    private static let maxSessions = 50
 
     private let key = StorageKeys.gameHistory
     private let encoder = JSONEncoder()
     private let decoder = JSONDecoder()
+
+    private init() {}
 
     func saveSession(players: [Player]) {
         var history = loadHistory()
@@ -26,6 +29,9 @@ final class GameHistoryService {
             players: players.map { GameSession.PlayerResult(name: $0.name, score: $0.score) }
         )
         history.append(session)
+        if history.count > GameHistoryService.maxSessions {
+            history = Array(history.suffix(GameHistoryService.maxSessions))
+        }
         if let data = try? encoder.encode(history) {
             UserDefaults.standard.set(data, forKey: key)
         }

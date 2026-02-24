@@ -35,7 +35,11 @@ private struct DeezerArtist: Codable {
 }
 
 private struct DeezerAlbum: Codable {
-    let cover_medium: String
+    let coverMedium: String
+
+    enum CodingKeys: String, CodingKey {
+        case coverMedium = "cover_medium"
+    }
 }
 
 // MARK: - Service
@@ -45,7 +49,7 @@ final class DeezerService {
 
     private let session: URLSession
 
-    init() {
+    private init() {
         let config = URLSessionConfiguration.default
         config.timeoutIntervalForRequest = 10
         self.session = URLSession(configuration: config)
@@ -66,8 +70,6 @@ final class DeezerService {
                 throw DeezerError.networkUnavailable
             }
             data = responseData
-        } catch is DeezerError {
-            throw DeezerError.networkUnavailable
         } catch {
             throw DeezerError.networkUnavailable
         }
@@ -89,7 +91,7 @@ final class DeezerService {
                 title: dt.title,
                 artist: dt.artist.name,
                 previewURL: URL(string: dt.preview),
-                albumCoverURL: URL(string: dt.album.cover_medium)
+                albumCoverURL: URL(string: dt.album.coverMedium)
             )
         }
     }

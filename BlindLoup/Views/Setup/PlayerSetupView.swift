@@ -17,7 +17,7 @@ struct PlayerSetupView: View {
             VStack(spacing: 0) {
                 // Header
                 HStack {
-                    Button(action: { vm.phase = .home }) {
+                    Button(action: { vm.phase = .classicMenu }) {
                         Image(systemName: "chevron.left")
                             .font(.title3)
                             .foregroundStyle(Color.appWhite)

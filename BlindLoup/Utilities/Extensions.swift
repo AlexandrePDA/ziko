@@ -1,5 +1,4 @@
 import Foundation
-import SwiftUI
 
 extension URL {
     static func deezerSearch(query: String) -> URL? {
