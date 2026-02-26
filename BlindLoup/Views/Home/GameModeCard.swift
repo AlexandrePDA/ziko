@@ -105,7 +105,7 @@ struct GameModeCard: View {
 
 // MARK: - Classic illustration
 
-private struct ClassicIllustration: View {
+struct ClassicIllustration: View {
     @State private var animate = false
 
     var body: some View {

@@ -32,7 +32,7 @@ final class GameViewModel {
     var finalRanking: [Player] {
         players.sorted {
             if $0.score != $1.score { return $0.score > $1.score }
-            return undetectedRoundCount(for: $0) > undetectedRoundCount(for: $1)
+            return tiebreakScore(for: $0) > tiebreakScore(for: $1)
         }
     }
 
@@ -65,6 +65,14 @@ final class GameViewModel {
 
     func removePlayer(at offsets: IndexSet) {
         players.remove(atOffsets: offsets)
+    }
+
+    func renamePlayer(id: UUID, newName: String) {
+        let trimmed = newName.trimmingCharacters(in: .whitespaces)
+        guard !trimmed.isEmpty else { return }
+        if let idx = players.firstIndex(where: { $0.id == id }) {
+            players[idx].name = trimmed
+        }
     }
 
     // MARK: - Track selection
@@ -230,8 +238,8 @@ final class GameViewModel {
         rounds = allTracks.shuffled().map { GameRound(track: $0) }
     }
 
-    /// Rounds where the player was neither the owner nor suspected by anyone — used as tiebreaker.
-    private func undetectedRoundCount(for player: Player) -> Int {
+    /// Rounds where the player was neither the owner nor guessed by anyone — used as score tiebreaker.
+    private func tiebreakScore(for player: Player) -> Int {
         rounds.filter { round in
             round.track.ownerID != player.id &&
             !round.votes.values.contains(player.id)

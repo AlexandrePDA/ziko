@@ -1,11 +1,12 @@
 import SwiftUI
+import UIKit
 
 struct FinalScoreView: View {
     @Environment(GameViewModel.self) private var vm
     @State private var podiumVisible = false
+    @State private var showConfetti = false
 
     private var ranking: [Player] { vm.finalRanking }
-
     private var top3: [Player]  { Array(ranking.prefix(3)) }
     private var rest: [Player]  { ranking.count > 3 ? Array(ranking.dropFirst(3)) : [] }
 
@@ -25,7 +26,46 @@ struct FinalScoreView: View {
                 PodiumView(top3: top3, visible: podiumVisible)
                     .padding(.horizontal, 16)
 
-                // Bonus invincibilité
+                // 4e et +
+                if !rest.isEmpty {
+                    VStack(spacing: 10) {
+                        ForEach(Array(rest.enumerated()), id: \.element.id) { idx, player in
+                            HStack(spacing: 8) {
+                                Text("\(idx + 4)")
+                                    .font(.caption.weight(.bold))
+                                    .foregroundStyle(Color.appGrey)
+                                    .frame(width: 22, alignment: .leading)
+
+                                Spacer()
+
+                                HStack(spacing: 6) {
+                                    Circle()
+                                        .fill(Color.playerColor(player.colorIndex))
+                                        .frame(width: 8, height: 8)
+                                    Text(player.name)
+                                        .font(.subheadline.weight(.semibold))
+                                        .foregroundStyle(Color.playerColor(player.colorIndex))
+                                        .lineLimit(1)
+                                        .minimumScaleFactor(0.7)
+                                }
+
+                                Spacer()
+
+                                Text("\(player.score) pts")
+                                    .font(.caption.weight(.semibold))
+                                    .foregroundStyle(Color.appGrey)
+                                    .frame(minWidth: 55, alignment: .trailing)
+                            }
+                            .padding(.horizontal, 24)
+                        }
+                    }
+                    .padding(.top, 16)
+                    .opacity(podiumVisible ? 1 : 0)
+                    .offset(y: podiumVisible ? 0 : 20)
+                    .animation(.easeOut(duration: 0.4).delay(0.6), value: podiumVisible)
+                }
+
+                // Bonus invincibilité (tout en bas du classement)
                 if !vm.invincibilityWinners.isEmpty {
                     VStack(spacing: 8) {
                         HStack {
@@ -64,33 +104,8 @@ struct FinalScoreView: View {
                         }
                     }
                     .padding(.top, 16)
-                }
-
-                // 4e et +
-                if !rest.isEmpty {
-                    HStack(spacing: 0) {
-                        ForEach(Array(rest.enumerated()), id: \.element.id) { idx, player in
-                            VStack(spacing: 3) {
-                                Text("\(idx + 4)")
-                                    .font(.caption.weight(.bold))
-                                    .foregroundStyle(Color.appGrey)
-                                Text(player.name)
-                                    .font(.subheadline.weight(.semibold))
-                                    .foregroundStyle(Color.playerColor(player.colorIndex))
-                                    .lineLimit(1)
-                                    .minimumScaleFactor(0.7)
-                                Text("\(player.score) pts")
-                                    .font(.caption)
-                                    .foregroundStyle(Color.appGrey)
-                            }
-                            .frame(maxWidth: .infinity)
-                        }
-                    }
-                    .padding(.horizontal, 20)
-                    .padding(.top, 16)
                     .opacity(podiumVisible ? 1 : 0)
-                    .offset(y: podiumVisible ? 0 : 20)
-                    .animation(.easeOut(duration: 0.4).delay(0.6), value: podiumVisible)
+                    .animation(.easeOut(duration: 0.4).delay(0.8), value: podiumVisible)
                 }
 
                 Spacer()
@@ -109,11 +124,19 @@ struct FinalScoreView: View {
                 .padding(.horizontal, 20)
                 .padding(.bottom, 32)
             }
+
+            // Confetti
+            if showConfetti {
+                ConfettiView()
+                    .ignoresSafeArea()
+                    .allowsHitTesting(false)
+            }
         }
         .onAppear {
             withAnimation(.spring(response: 0.6, dampingFraction: 0.75).delay(0.15)) {
                 podiumVisible = true
             }
+            showConfetti = true
         }
     }
 }
@@ -149,7 +172,6 @@ private struct PodiumView: View {
         }
     }
 
-    // Couleurs podium pastels (or, argent, bronze)
     private func podiumColor(_ rank: Int) -> Color {
         switch rank {
         case 1: return Color(hex: "#EDD88A")
@@ -176,11 +198,11 @@ private struct PodiumView: View {
                     // Nom + médaille (au-dessus du bloc)
                     VStack(spacing: 4) {
                         Text(item.player.name)
-                            .font(isFirst ? .headline : .subheadline)
+                            .font(isFirst ? .title3 : .headline)
                             .fontWeight(.bold)
                             .foregroundStyle(Color.playerColor(item.player.colorIndex))
                             .lineLimit(1)
-                            .minimumScaleFactor(0.7)
+                            .minimumScaleFactor(0.65)
                         Text(medal(item.rank))
                             .font(.system(size: isFirst ? 40 : 30))
                     }
@@ -209,6 +231,79 @@ private struct PodiumView: View {
                 }
                 .frame(maxWidth: .infinity)
             }
+        }
+    }
+}
+
+// MARK: - Confetti
+
+private struct ConfettiView: UIViewRepresentable {
+    func makeUIView(context: Context) -> ConfettiContainerView {
+        let view = ConfettiContainerView()
+        view.isUserInteractionEnabled = false
+        view.backgroundColor = .clear
+        return view
+    }
+    func updateUIView(_ uiView: ConfettiContainerView, context: Context) {}
+}
+
+private class ConfettiContainerView: UIView {
+    private var emitterSetUp = false
+    private let emitter = CAEmitterLayer()
+
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        guard !emitterSetUp, bounds.width > 0 else { return }
+        emitterSetUp = true
+        setupEmitter()
+    }
+
+    private func makeCell(color: UIColor) -> CAEmitterCell {
+        let cell = CAEmitterCell()
+        cell.birthRate = 7
+        cell.lifetime = 5.5
+        cell.lifetimeRange = 1.5
+        cell.velocity = 320
+        cell.velocityRange = 130
+        cell.emissionRange = .pi / 4
+        cell.emissionLongitude = .pi / 2
+        cell.spin = 4
+        cell.spinRange = 3
+        cell.scale = 0.22
+        cell.scaleRange = 0.12
+        cell.yAcceleration = 130
+        cell.color = color.withAlphaComponent(0.9).cgColor
+
+        let renderer = UIGraphicsImageRenderer(size: CGSize(width: 14, height: 9))
+        let img = renderer.image { ctx in
+            color.setFill()
+            ctx.fill(CGRect(x: 0, y: 0, width: 14, height: 9))
+        }
+        cell.contents = img.cgImage
+        return cell
+    }
+
+    private func setupEmitter() {
+        emitter.emitterPosition = CGPoint(x: bounds.width / 2, y: -10)
+        emitter.emitterSize = CGSize(width: bounds.width, height: 1)
+        emitter.emitterShape = .line
+        emitter.renderMode = .oldestFirst
+
+        let colors: [UIColor] = [
+            UIColor(red: 1.00, green: 0.42, blue: 0.42, alpha: 1),
+            UIColor(red: 1.00, green: 0.85, blue: 0.24, alpha: 1),
+            UIColor(red: 0.42, green: 0.80, blue: 0.47, alpha: 1),
+            UIColor(red: 0.31, green: 0.80, blue: 0.77, alpha: 1),
+            UIColor(red: 0.66, green: 0.33, blue: 0.97, alpha: 1),
+            UIColor(red: 0.96, green: 0.45, blue: 0.71, alpha: 1),
+            UIColor(red: 1.00, green: 0.56, blue: 0.10, alpha: 1),
+        ]
+
+        emitter.emitterCells = colors.map { makeCell(color: $0) }
+        layer.addSublayer(emitter)
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) { [weak self] in
+            self?.emitter.birthRate = 0
         }
     }
 }

@@ -35,7 +35,7 @@ private let slides: [Slide] = [
     Slide(
         emoji: "🤫",
         title: "Sélection secrète",
-        subtitle: "Étape 1",
+        subtitle: "",
         body: "Chacun choisit ses morceaux en secret pendant que les autres regardent ailleurs. Mélange tes vrais coups de cœur avec des pièges — plus tu brouilles les pistes, plus tu gagnes !",
         tip: "Une musique ne peut être sélectionnée qu'une fois par joueur, mais plusieurs joueurs peuvent avoir les mêmes goûts...",
         tipEmoji: "👀"
@@ -43,20 +43,20 @@ private let slides: [Slide] = [
     Slide(
         emoji: "🎧",
         title: "L'écoute",
-        subtitle: "Étape 2",
-        body: "Tous les morceaux sont joués dans un ordre aléatoire. La pochette est visible mais l'identité du propriétaire reste secrète. Écoute, observe, déduis !"
+        subtitle: "",
+        body: "Tous les morceaux sont joués dans un ordre aléatoire. La pochette est visible mais l'identité du propriétaire reste secrète. Écoute, observe, déduis ! Échangez entre vous pour essayer de trouver à qui appartient chaque morceau."
     ),
     Slide(
         emoji: "🗳️",
         title: "Le vote",
-        subtitle: "Étape 3",
+        subtitle: "",
         body: "Après chaque morceau, chaque joueur vote pour désigner le propriétaire. Impossible de voter pour soi-même — à toi de jouer !",
         tip: "Le propriétaire vote aussi pendant la partie pour brouiller les pistes."
     ),
     Slide(
         emoji: "🏆",
         title: "Les points",
-        subtitle: "Étape 4",
+        subtitle: "",
         body: "Le score récompense autant les bons détectives que les grands bluffeurs.",
         scores: [
             ScoreRow(label: "Personne ne te trouve 🕵️",       points: "+30 pts", style: .accent),
@@ -145,16 +145,18 @@ private struct SlideView: View {
                 .font(.system(size: 80))
                 .padding(.bottom, 24)
 
-            // Subtitle chip
-            Text(slide.subtitle.uppercased())
-                .font(.caption)
-                .fontWeight(.semibold)
-                .foregroundStyle(Color.appOrange)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 5)
-                .background(Color.appOrange.opacity(0.15))
-                .clipShape(Capsule())
-                .padding(.bottom, 12)
+            // Subtitle chip (masqué si vide)
+            if !slide.subtitle.isEmpty {
+                Text(slide.subtitle.uppercased())
+                    .font(.caption)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(Color.appOrange)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 5)
+                    .background(Color.appOrange.opacity(0.15))
+                    .clipShape(Capsule())
+                    .padding(.bottom, 12)
+            }
 
             // Title
             Text(slide.title)

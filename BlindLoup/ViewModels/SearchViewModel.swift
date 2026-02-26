@@ -54,10 +54,13 @@ final class SearchViewModel {
         state = .loading
         do {
             let tracks = try await service.searchTracks(query: query)
+            guard searchText == query else { return }
             state = .loaded(tracks)
         } catch let error as DeezerError {
+            guard searchText == query else { return }
             state = .error(error.localizedDescription)
         } catch {
+            guard searchText == query else { return }
             state = .error("Erreur inconnue.")
         }
     }

@@ -19,6 +19,10 @@ struct VotingView: View {
 
     var isLastVoter: Bool { currentVoterIndex == vm.players.count - 1 }
 
+    private func votablePlayers(for voter: Player) -> [Player] {
+        vm.players.filter { $0.id != voter.id }
+    }
+
     var body: some View {
         ZStack {
             Color.appBlack.ignoresSafeArea()
@@ -60,7 +64,7 @@ struct VotingView: View {
 
             ScrollView {
                 VStack(spacing: 10) {
-                    ForEach(vm.players.filter { $0.id != voter.id }) { player in
+                    ForEach(votablePlayers(for: voter)) { player in
                         let pColor = Color.playerColor(player.colorIndex)
                         let isSelected = pendingVote == player.id
                         Button(action: { pendingVote = player.id }) {

@@ -4,6 +4,9 @@ struct PlayerSetupView: View {
     @Environment(GameViewModel.self) private var vm
     @State private var newName = ""
     @State private var showMaxAlert = false
+    @State private var editingPlayer: Player? = nil
+    @State private var editedName = ""
+    @State private var showEditAlert = false
     @FocusState private var fieldFocused: Bool
 
     var canStart: Bool {
@@ -47,8 +50,26 @@ struct PlayerSetupView: View {
                             Spacer()
                         }
                         .listRowBackground(Color.appNavy)
+                        .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                            Button(role: .destructive) {
+                                if let idx = vm.players.firstIndex(where: { $0.id == player.id }) {
+                                    vm.removePlayer(at: IndexSet(integer: idx))
+                                }
+                            } label: {
+                                Label("Supprimer", systemImage: "trash")
+                            }
+                        }
+                        .swipeActions(edge: .leading, allowsFullSwipe: false) {
+                            Button {
+                                editingPlayer = player
+                                editedName = player.name
+                                showEditAlert = true
+                            } label: {
+                                Label("Modifier", systemImage: "pencil")
+                            }
+                            .tint(Color.appOrange)
+                        }
                     }
-                    .onDelete { offsets in vm.removePlayer(at: offsets) }
                 }
                 .listStyle(.plain)
                 .scrollContentBackground(.hidden)
@@ -126,6 +147,18 @@ struct PlayerSetupView: View {
             Text(vm.storeService.isPremium
                  ? "Maximum \(vm.maxPlayers) joueurs."
                  : "La version gratuite est limitée à \(GameConfig.freeMaxPlayers) joueurs. Passez Premium pour jouer jusqu'à 8 !")
+        }
+        .alert("Modifier le joueur", isPresented: $showEditAlert) {
+            TextField("Prénom", text: $editedName)
+            Button("Valider") {
+                if let player = editingPlayer {
+                    vm.renamePlayer(id: player.id, newName: editedName)
+                }
+                editingPlayer = nil
+            }
+            Button("Annuler", role: .cancel) {
+                editingPlayer = nil
+            }
         }
     }
 

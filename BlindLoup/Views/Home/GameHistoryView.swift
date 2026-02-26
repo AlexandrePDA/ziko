@@ -3,10 +3,11 @@ import SwiftUI
 struct GameHistoryView: View {
     @Environment(\.dismiss) private var dismiss
 
-    private let history = GameHistoryService.shared.loadHistory()
+    private let sortedHistory: [GameSession]
 
-    private var sortedHistory: [GameSession] {
-        history.sorted { $0.date > $1.date }
+    init() {
+        sortedHistory = GameHistoryService.shared.loadHistory()
+            .sorted { $0.date > $1.date }
     }
 
     var body: some View {

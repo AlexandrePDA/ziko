@@ -19,6 +19,7 @@ final class StoreKitService {
         Task { await verifyEntitlements() }
     }
 
+    @MainActor
     func loadProducts() async {
         guard !isLoadingProducts else { return }
         isLoadingProducts = true
@@ -38,15 +39,18 @@ final class StoreKitService {
     }
 
 #if DEBUG
+    @MainActor
     func activatePremiumForTesting() {
         setPremium(true)
     }
 
+    @MainActor
     func deactivatePremiumForTesting() {
         setPremium(false)
     }
 #endif
 
+    @MainActor
     func purchasePremium() async throws {
         guard let product else {
             errorMessage = "Produit non disponible."
@@ -70,6 +74,7 @@ final class StoreKitService {
         }
     }
 
+    @MainActor
     func restorePurchases() async throws {
         isLoading = true
         defer { isLoading = false }
@@ -77,6 +82,7 @@ final class StoreKitService {
         await verifyEntitlements()
     }
 
+    @MainActor
     func verifyEntitlements() async {
         for await result in Transaction.currentEntitlements {
             if case .verified(let transaction) = result,
@@ -96,6 +102,7 @@ final class StoreKitService {
         }
     }
 
+    @MainActor
     private func setPremium(_ value: Bool) {
         isPremium = value
         UserDefaults.standard.set(value, forKey: StorageKeys.isPremium)

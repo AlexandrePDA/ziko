@@ -48,6 +48,7 @@ final class DeezerService {
     static let shared = DeezerService()
 
     private let session: URLSession
+    private let decoder = JSONDecoder()
 
     private init() {
         let config = URLSessionConfiguration.default
@@ -64,19 +65,20 @@ final class DeezerService {
         }
 
         let data: Data
+        let response: URLResponse
         do {
-            let (responseData, response) = try await session.data(from: url)
-            guard (response as? HTTPURLResponse)?.statusCode == 200 else {
-                throw DeezerError.networkUnavailable
-            }
-            data = responseData
+            (data, response) = try await session.data(from: url)
         } catch {
+            throw DeezerError.networkUnavailable
+        }
+
+        guard (response as? HTTPURLResponse)?.statusCode == 200 else {
             throw DeezerError.networkUnavailable
         }
 
         let decoded: DeezerSearchResponse
         do {
-            decoded = try JSONDecoder().decode(DeezerSearchResponse.self, from: data)
+            decoded = try decoder.decode(DeezerSearchResponse.self, from: data)
         } catch {
             throw DeezerError.parsingFailed
         }
@@ -85,14 +87,16 @@ final class DeezerService {
             throw DeezerError.emptyResults
         }
 
-        return decoded.data.map { dt in
-            Track(
-                id: dt.id,
-                title: dt.title,
-                artist: dt.artist.name,
-                previewURL: URL(string: dt.preview),
-                albumCoverURL: URL(string: dt.album.coverMedium)
-            )
-        }
+        return decoded.data.map { mapTrack($0) }
+    }
+
+    private func mapTrack(_ dt: DeezerTrack) -> Track {
+        Track(
+            id: dt.id,
+            title: dt.title,
+            artist: dt.artist.name,
+            previewURL: URL(string: dt.preview),
+            albumCoverURL: URL(string: dt.album.coverMedium)
+        )
     }
 }
