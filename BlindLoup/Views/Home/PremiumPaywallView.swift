@@ -16,7 +16,9 @@ struct PremiumPaywallView: View {
                         Image(systemName: "xmark.circle.fill")
                             .font(.title2)
                             .foregroundStyle(Color.appGrey)
+                            .frame(width: 44, height: 44)
                     }
+                    .accessibilityLabel("Fermer")
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, 16)
@@ -42,8 +44,6 @@ struct PremiumPaywallView: View {
 
                 // Features
                 VStack(spacing: 16) {
-                    FeatureRow(icon: "gamecontroller.fill",
-                               text: "Tous les modes de jeu")
                     FeatureRow(icon: "person.3.fill",
                                text: "Jusqu'à 8 joueurs (vs 4 en gratuit)")
                     FeatureRow(icon: "music.note.list",

@@ -25,16 +25,16 @@ final class SearchViewModel {
     var state: SearchState = .idle
 
     private var debounceTask: Task<Void, Never>?
-    private let service: DeezerService
+    private let service: MusicService
 
-    init(service: DeezerService = .shared) {
+    init(service: MusicService = .shared) {
         self.service = service
     }
 
     private func scheduleSearch() {
         debounceTask?.cancel()
         let query = searchText
-        guard !query.trimmingCharacters(in: .whitespaces).isEmpty else {
+        guard !query.isBlank else {
             state = .idle
             return
         }
@@ -44,7 +44,7 @@ final class SearchViewModel {
                 guard !Task.isCancelled else { return }
                 await self?.performSearch(query: query)
             } catch {
-                // Task cancelled — no-op
+                // Task annulée — pas d'action
             }
         }
     }
@@ -56,7 +56,7 @@ final class SearchViewModel {
             let tracks = try await service.searchTracks(query: query)
             guard searchText == query else { return }
             state = .loaded(tracks)
-        } catch let error as DeezerError {
+        } catch let error as MusicServiceError {
             guard searchText == query else { return }
             state = .error(error.localizedDescription)
         } catch {
@@ -68,6 +68,6 @@ final class SearchViewModel {
     func clearSearch() {
         debounceTask?.cancel()
         searchText = ""
-        // state is reset to .idle via searchText didSet → scheduleSearch()
+        // state remis à .idle via searchText didSet → scheduleSearch()
     }
 }

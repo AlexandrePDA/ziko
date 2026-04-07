@@ -62,9 +62,9 @@ struct SecretSelectionView: View {
                                             Image(systemName: "trash")
                                                 .font(.body)
                                                 .foregroundStyle(Color.appOrange)
-                                                .padding(.horizontal, 16)
-                                                .frame(maxHeight: .infinity)
+                                                .frame(minWidth: 44, maxHeight: .infinity)
                                         }
+                                        .accessibilityLabel("Supprimer \(track.title)")
                                     }
                                     .padding(.horizontal, 16)
                                     .background(Color.appNavy)

@@ -12,8 +12,9 @@ struct PrimaryButton: View {
                 .foregroundStyle(Color.appWhite)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 16)
-                .background(isDisabled ? Color.appGrey : Color.appOrange)
+                .background(Color.appOrange)
                 .clipShape(RoundedRectangle(cornerRadius: 14))
+                .opacity(isDisabled ? 0.4 : 1)
         }
         .disabled(isDisabled)
     }

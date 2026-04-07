@@ -4,10 +4,9 @@ struct HomeView: View {
     @Environment(GameViewModel.self) private var vm
     @Environment(StoreKitService.self) private var store
 
-    @State private var showPremiumSheet    = false
-    @State private var showSettings        = false
-    @State private var showRolesComingSoon = false
-    @State private var showHowToPlay       = false
+    @State private var showPremiumSheet = false
+    @State private var showSettings     = false
+    @State private var showHowToPlay    = false
 
     var body: some View {
         ZStack {
@@ -32,13 +31,16 @@ struct HomeView: View {
                         .background(Color.appAccent.opacity(0.12))
                         .clipShape(Capsule())
                     }
+                    .accessibilityLabel(store.isPremium ? "Compte Premium" : "Passer à Premium")
 
-                    // Roue crantée — Paramètres
+                    // Paramètres
                     Button(action: { showSettings = true }) {
                         Image(systemName: "gearshape.fill")
                             .font(.title3)
                             .foregroundStyle(Color.appGrey)
+                            .frame(width: 44, height: 44)
                     }
+                    .accessibilityLabel("Paramètres")
                 }
                 .padding(.horizontal, 24)
                 .padding(.top, 20)
@@ -49,6 +51,7 @@ struct HomeView: View {
                 (Text("BLIND").foregroundStyle(Color.appAccent)
                  + Text(" LOUP").foregroundStyle(Color.appWhite))
                     .font(.system(size: 52, weight: .black))
+                    .accessibilityLabel("BlindLoup")
 
                 Text("Choisis ton mode de jeu")
                     .font(.subheadline)
@@ -58,18 +61,8 @@ struct HomeView: View {
                 Spacer()
 
                 // ── Mode cards ───────────────────────────────────
-                VStack(spacing: 14) {
-                    GameModeCard(mode: .classic, isPremium: store.isPremium) {
-                        vm.advancePhase()
-                    }
-
-                    GameModeCard(mode: .roles, isPremium: store.isPremium) {
-                        if store.isPremium {
-                            showRolesComingSoon = true
-                        } else {
-                            showPremiumSheet = true
-                        }
-                    }
+                GameModeCard(mode: .classic, isPremium: store.isPremium) {
+                    vm.advancePhase()
                 }
                 .padding(.horizontal, 20)
 
@@ -80,12 +73,6 @@ struct HomeView: View {
         .sheet(isPresented: $showPremiumSheet) { PremiumPaywallView() }
         .sheet(isPresented: $showSettings)     { SettingsView() }
         .sheet(isPresented: $showHowToPlay)    { HowToPlayView() }
-        // ── Alerts ───────────────────────────────────────────────
-        .alert("Bientôt disponible", isPresented: $showRolesComingSoon) {
-            Button("OK", role: .cancel) {}
-        } message: {
-            Text("Le mode Loup-Garou avec rôles secrets arrive très prochainement. Reste connecté !")
-        }
         .onAppear {
             if !UserDefaults.standard.bool(forKey: StorageKeys.hasSeenTutorial) {
                 showHowToPlay = true

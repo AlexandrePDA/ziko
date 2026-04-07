@@ -24,7 +24,9 @@ struct PlayerSetupView: View {
                         Image(systemName: "chevron.left")
                             .font(.title3)
                             .foregroundStyle(Color.appWhite)
+                            .frame(width: 44, height: 44)
                     }
+                    .accessibilityLabel("Retour")
                     Spacer()
                     Text("Joueurs")
                         .font(.headline)

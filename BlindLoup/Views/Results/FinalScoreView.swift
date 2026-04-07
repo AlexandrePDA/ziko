@@ -68,19 +68,8 @@ struct FinalScoreView: View {
                 // Bonus invincibilité (tout en bas du classement)
                 if !vm.invincibilityWinners.isEmpty {
                     VStack(spacing: 8) {
-                        HStack {
-                            Rectangle()
-                                .fill(Color.scoreBonus.opacity(0.4))
-                                .frame(height: 1)
-                            Text("BONUS PARTIE")
-                                .font(.caption.weight(.bold))
-                                .foregroundStyle(Color.scoreBonus)
-                                .fixedSize()
-                            Rectangle()
-                                .fill(Color.scoreBonus.opacity(0.4))
-                                .frame(height: 1)
-                        }
-                        .padding(.horizontal, 20)
+                        SectionDividerLabel(title: "BONUS PARTIE", color: Color.scoreBonus)
+                            .padding(.horizontal, 20)
 
                         ForEach(vm.invincibilityWinners) { player in
                             HStack(spacing: 12) {

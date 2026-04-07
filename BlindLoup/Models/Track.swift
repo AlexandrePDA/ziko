@@ -1,14 +1,14 @@
 import Foundation
 
 struct Track: Identifiable, Codable, Equatable {
-    let id: Int
+    let id: String
     let title: String
     let artist: String
     let previewURL: URL?
     let albumCoverURL: URL?
     var ownerID: UUID
 
-    init(id: Int, title: String, artist: String, previewURL: URL?, albumCoverURL: URL?, ownerID: UUID = UUID()) {
+    init(id: String, title: String, artist: String, previewURL: URL?, albumCoverURL: URL?, ownerID: UUID = UUID()) {
         self.id = id
         self.title = title
         self.artist = artist

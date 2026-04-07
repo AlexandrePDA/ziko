@@ -23,7 +23,9 @@ struct ClassicModeMenuView: View {
                         }
                         .font(.subheadline)
                         .foregroundStyle(Color.appGrey)
+                        .frame(minHeight: 44)
                     }
+                    .accessibilityLabel("Retour à l'accueil")
                     Spacer()
                 }
                 .padding(.horizontal, 24)
