@@ -8,16 +8,16 @@ struct VotingView: View {
     @State private var voterReady: Bool = false
     @State private var pendingVote: UUID? = nil
 
-    var currentVoter: Player? {
+    private var currentVoter: Player? {
         vm.players.indices.contains(currentVoterIndex) ? vm.players[currentVoterIndex] : nil
     }
 
-    var nextVoter: Player? {
+    private var nextVoter: Player? {
         let next = currentVoterIndex + 1
         return vm.players.indices.contains(next) ? vm.players[next] : nil
     }
 
-    var isLastVoter: Bool { currentVoterIndex == vm.players.count - 1 }
+    private var isLastVoter: Bool { currentVoterIndex == vm.players.count - 1 }
 
     private func votablePlayers(for voter: Player) -> [Player] {
         vm.players.filter { $0.id != voter.id }
@@ -46,6 +46,21 @@ struct VotingView: View {
                     .onAppear { vm.advancePhase() }
             }
         }
+    }
+
+    private var isProvocateur: Bool {
+        guard let voter = currentVoter else { return false }
+        return vm.role(for: voter.id) == .provocateur && vm.gameMode == .roles
+    }
+
+    private var doublingActive: Bool {
+        guard let voter = currentVoter else { return false }
+        return vm.isPendingDoubling(voter.id)
+    }
+
+    private var doublingUsed: Bool {
+        guard let voter = currentVoter else { return false }
+        return vm.hasUsedDoubling(voter.id)
     }
 
     @ViewBuilder
@@ -101,6 +116,11 @@ struct VotingView: View {
                         .buttonStyle(.plain)
                         .animation(.easeInOut(duration: 0.15), value: isSelected)
                     }
+
+                    // Provocateur doubling button
+                    if isProvocateur && !doublingUsed {
+                        provocateurButton(for: voter)
+                    }
                 }
                 .padding(.horizontal, 20)
                 .padding(.bottom, 8)
@@ -116,7 +136,7 @@ struct VotingView: View {
                     .foregroundStyle(pendingVote == nil ? Color.appGrey : Color.appBackground)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 16)
-                    .background(pendingVote == nil ? Color.appSurface : Color.appAccent)
+                    .background(pendingVote == nil ? Color.appSurface : vm.themeColor)
                     .clipShape(RoundedRectangle(cornerRadius: 14))
             }
             .disabled(pendingVote == nil)
@@ -126,6 +146,41 @@ struct VotingView: View {
             .animation(.easeInOut(duration: 0.2), value: pendingVote == nil)
         }
         .background(Color.appBlack)
+    }
+
+    @ViewBuilder
+    private func provocateurButton(for voter: Player) -> some View {
+        let provocateurColor = RoleType.provocateur.accentColor
+        let isActive = doublingActive
+
+        Button(action: { vm.activateProvocateurDoubling(for: voter.id) }) {
+            HStack(spacing: 12) {
+                Text("🃏")
+                    .font(.title3)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Doubler la mise")
+                        .font(.subheadline.weight(.bold))
+                        .foregroundStyle(isActive ? Color.appBackground : provocateurColor)
+                    Text(isActive ? "Activé · correct × 2 · faux × 2" : "Correct × 2 · Faux × 2 — utilisation unique")
+                        .font(.caption)
+                        .foregroundStyle(isActive ? Color.appBackground.opacity(0.75) : Color.appGrey)
+                }
+                Spacer()
+                Image(systemName: isActive ? "checkmark.circle.fill" : "circle")
+                    .font(.title3)
+                    .foregroundStyle(isActive ? Color.appBackground : provocateurColor.opacity(0.5))
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 14)
+            .background(isActive ? provocateurColor : provocateurColor.opacity(0.1))
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .strokeBorder(provocateurColor.opacity(isActive ? 0 : 0.3), lineWidth: 1)
+            )
+        }
+        .buttonStyle(.plain)
+        .animation(.easeInOut(duration: 0.2), value: isActive)
     }
 
     @ViewBuilder
@@ -164,7 +219,7 @@ struct VotingView: View {
 
             Spacer()
 
-            PrimaryButton(title: isLastVoter ? "Voir la révélation" : "C'est parti \(nextVoter?.name ?? "") !") {
+            PrimaryButton(title: isLastVoter ? "Voir la révélation" : "C'est parti \(nextVoter?.name ?? "") !", color: vm.themeColor) {
                 advanceVoter()
             }
             .padding(.horizontal, 20)

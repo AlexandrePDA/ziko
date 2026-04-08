@@ -57,7 +57,7 @@ struct BlindTestView: View {
     @Environment(AudioPlayerService.self) private var audioService
     let roundIndex: Int
 
-    var round: GameRound? {
+    private var round: GameRound? {
         vm.rounds.indices.contains(roundIndex) ? vm.rounds[roundIndex] : nil
     }
 
@@ -91,11 +91,13 @@ struct BlindTestView: View {
                             Image(systemName: "music.note")
                                 .font(.system(size: 64))
                                 .foregroundStyle(Color.appOrange)
+                                .accessibilityHidden(true)
                         }
                     }
                     .frame(width: 220, height: 220)
                     .clipShape(RoundedRectangle(cornerRadius: 20))
                     .shadow(color: .black.opacity(0.5), radius: 24)
+                    .accessibilityHidden(true)
 
                     VStack(spacing: 6) {
                         Text(round.track.title)
@@ -130,7 +132,7 @@ struct BlindTestView: View {
                     }
 
                     // Vote button
-                    PrimaryButton(title: "Voter maintenant") {
+                    PrimaryButton(title: "Voter maintenant", color: vm.themeColor) {
                         audioService.pause()
                         vm.advancePhase()
                     }
