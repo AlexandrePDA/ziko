@@ -5,13 +5,13 @@ struct SecretSelectionView: View {
     let playerIndex: Int
     @State private var showSearch = false
 
-    var player: Player? {
+    private var player: Player? {
         vm.players.indices.contains(playerIndex) ? vm.players[playerIndex] : nil
     }
 
-    var tracksLimit: Int { vm.tracksPerPlayer }
+    private var tracksLimit: Int { vm.tracksPerPlayer }
 
-    var canContinue: Bool {
+    private var canContinue: Bool {
         (player?.selectedTracks.count ?? 0) == tracksLimit
     }
 
@@ -33,7 +33,7 @@ struct SecretSelectionView: View {
                             .foregroundStyle(Color.playerColor(player.colorIndex))
                         Text("\(player.selectedTracks.count)/\(tracksLimit) morceaux")
                             .font(.subheadline)
-                            .foregroundStyle(Color.appGrey)
+                            .foregroundStyle(vm.themeColor)
                     }
                     .padding(.top, 24)
                     .padding(.bottom, 20)
@@ -61,7 +61,7 @@ struct SecretSelectionView: View {
                                         }) {
                                             Image(systemName: "trash")
                                                 .font(.body)
-                                                .foregroundStyle(Color.appOrange)
+                                                .foregroundStyle(vm.themeColor)
                                                 .frame(minWidth: 44, maxHeight: .infinity)
                                         }
                                         .accessibilityLabel("Supprimer \(track.title)")
@@ -84,12 +84,12 @@ struct SecretSelectionView: View {
                                 Text("Ajouter un morceau (\(player.selectedTracks.count)/\(tracksLimit))")
                             }
                             .font(.headline)
-                            .foregroundStyle(Color.appOrange)
+                            .foregroundStyle(vm.themeColor)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 14)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 14)
-                                    .stroke(Color.appOrange, lineWidth: 1.5)
+                                    .stroke(vm.themeColor, lineWidth: 1.5)
                             )
                         }
                         .disabled(player.selectedTracks.count >= tracksLimit)
@@ -97,6 +97,7 @@ struct SecretSelectionView: View {
 
                         PrimaryButton(
                             title: playerIndex == vm.players.count - 1 ? "Lancer le jeu" : "Suivant",
+                            color: vm.themeColor,
                             isDisabled: !canContinue
                         ) {
                             vm.advancePhase()

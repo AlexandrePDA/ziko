@@ -9,7 +9,7 @@ struct PlayerSetupView: View {
     @State private var showEditAlert = false
     @FocusState private var fieldFocused: Bool
 
-    var canStart: Bool {
+    private var canStart: Bool {
         vm.players.count >= GameConfig.minPlayers
     }
 
@@ -20,7 +20,7 @@ struct PlayerSetupView: View {
             VStack(spacing: 0) {
                 // Header
                 HStack {
-                    Button(action: { vm.phase = .classicMenu }) {
+                    Button(action: { vm.phase = vm.gameMode == .roles ? .rolesMenu : .classicMenu }) {
                         Image(systemName: "chevron.left")
                             .font(.title3)
                             .foregroundStyle(Color.appWhite)
@@ -91,7 +91,7 @@ struct PlayerSetupView: View {
                                         .foregroundStyle(vm.tracksPerPlayer == n ? Color.appBlack : Color.appWhite)
                                         .frame(maxWidth: .infinity)
                                         .padding(.vertical, 10)
-                                        .background(vm.tracksPerPlayer == n ? Color.appOrange : Color.appNavy)
+                                        .background(vm.tracksPerPlayer == n ? vm.themeColor : Color.appNavy)
                                         .clipShape(RoundedRectangle(cornerRadius: 10))
                                 }
                             }
@@ -128,12 +128,12 @@ struct PlayerSetupView: View {
                             Image(systemName: "plus.circle.fill")
                                 .font(.title2)
                                 .foregroundStyle(
-                                    vm.players.count >= vm.maxPlayers ? Color.appGrey : Color.appOrange
+                                    vm.players.count >= vm.maxPlayers ? Color.appGrey : vm.themeColor
                                 )
                         }
                     }
 
-                    PrimaryButton(title: "Commencer", isDisabled: !canStart) {
+                    PrimaryButton(title: "Commencer", color: vm.themeColor, isDisabled: !canStart) {
                         vm.startFirstPlayer()
                     }
                 }

@@ -4,13 +4,13 @@ struct TransitionView: View {
     @Environment(GameViewModel.self) private var vm
     let nextPlayerIndex: Int
 
-    var nextPlayer: Player? {
+    private var nextPlayer: Player? {
         vm.players.indices.contains(nextPlayerIndex) ? vm.players[nextPlayerIndex] : nil
     }
 
-    var isFirstPlayer: Bool { nextPlayerIndex == 0 }
+    private var isFirstPlayer: Bool { nextPlayerIndex == 0 }
 
-    var messageLabel: Text {
+    private var messageLabel: Text {
         let name = nextPlayer?.name ?? ""
         let color = Color.playerColor(nextPlayer?.colorIndex ?? 0)
         let nameText = Text(name).foregroundStyle(color)
