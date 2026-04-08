@@ -31,11 +31,15 @@ struct PremiumPaywallView: View {
                     .foregroundStyle(Color.appOrange)
                     .padding(.bottom, 16)
 
-                Text("BlindLoup Premium")
-                    .font(.largeTitle)
-                    .fontWeight(.black)
-                    .foregroundStyle(Color.appWhite)
-                    .padding(.bottom, 8)
+                HStack(spacing: 6) {
+                    Text("ALIIIBI")
+                        .foregroundStyle(Color.appWhite)
+                    Text("Premium")
+                        .foregroundStyle(Color.appAccent)
+                }
+                .font(.largeTitle)
+                .fontWeight(.black)
+                .padding(.bottom, 8)
 
                 Text("Achat unique, à vie")
                     .font(.subheadline)
@@ -48,6 +52,8 @@ struct PremiumPaywallView: View {
                                text: "Jusqu'à 8 joueurs (vs 4 en gratuit)")
                     FeatureRow(icon: "music.note.list",
                                text: "Jusqu'à 6 morceaux par joueur")
+                    FeatureRow(icon: "theatermasks.fill",
+                               text: "Mode infiltré rôles secrets")
                     FeatureRow(icon: "clock.fill",
                                text: "Historique des parties")
                     FeatureRow(icon: "crown.fill",

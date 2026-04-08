@@ -58,6 +58,24 @@ struct SettingsView: View {
                     #endif
 
                     Spacer()
+
+                    // ── Logo ─────────────────────────────────────
+                    VStack(spacing: 8) {
+                        if let uiImage = UIImage(named: "AppIcon") {
+                            Image(uiImage: uiImage)
+                                .resizable()
+                                .frame(width: 72, height: 72)
+                                .clipShape(RoundedRectangle(cornerRadius: 16))
+                        }
+                        Text("ALIIIBI")
+                            .font(.system(size: 18, weight: .black))
+                            .foregroundStyle(Color.appAccent)
+                        Text("Le jeu qui détruit des amitiés. Mais en rythme.")
+                            .font(.caption)
+                            .foregroundStyle(Color.appGrey)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.bottom, 32)
                 }
             }
             .navigationTitle("Paramètres")

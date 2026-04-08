@@ -48,21 +48,34 @@ struct HomeView: View {
                 Spacer()
 
                 // ── Logo ─────────────────────────────────────────
-                (Text("BLIND").foregroundStyle(Color.appAccent)
-                 + Text(" LOUP").foregroundStyle(Color.appWhite))
+                Text("ALIIIBI")
                     .font(.system(size: 52, weight: .black))
-                    .accessibilityLabel("BlindLoup")
+                    .foregroundStyle(Color.appAccent)
+                    .accessibilityLabel("Aliiibi")
 
-                Text("Choisis ton mode de jeu")
+                TaglineView()
+                    .padding(.top, 10)
+
+                Text("Sélectionne le mode de jeu")
                     .font(.subheadline)
                     .foregroundStyle(Color.appGrey)
-                    .padding(.top, 6)
+                    .padding(.top, 14)
 
                 Spacer()
 
                 // ── Mode cards ───────────────────────────────────
-                GameModeCard(mode: .classic, isPremium: store.isPremium) {
-                    vm.advancePhase()
+                VStack(spacing: 14) {
+                    GameModeCard(mode: .classic, isPremium: store.isPremium) {
+                        vm.advancePhase()
+                    }
+
+                    GameModeCard(mode: .roles, isPremium: store.isPremium) {
+                        if store.isPremium {
+                            vm.phase = .rolesMenu
+                        } else {
+                            showPremiumSheet = true
+                        }
+                    }
                 }
                 .padding(.horizontal, 20)
 
@@ -77,6 +90,35 @@ struct HomeView: View {
             if !UserDefaults.standard.bool(forKey: StorageKeys.hasSeenTutorial) {
                 showHowToPlay = true
                 UserDefaults.standard.set(true, forKey: StorageKeys.hasSeenTutorial)
+            }
+        }
+    }
+}
+
+// MARK: - Tagline animée mot par mot
+
+private struct TaglineView: View {
+    private let words = ["Le", "jeu", "qui", "détruit", "des", "amitiés.","Mais", "en", "rythme." ]
+    @State private var visibleCount = 0
+
+    var body: some View {
+        HStack(spacing: 5) {
+            ForEach(Array(words.enumerated()), id: \.offset) { idx, word in
+                Text(word)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(idx == 3 ? Color.appAccent : Color.appGreyLight)
+                    .offset(y: visibleCount > idx ? 0 : 8)
+                    .opacity(visibleCount > idx ? 1 : 0)
+                    .animation(
+                        .spring(response: 0.4, dampingFraction: 0.65)
+                            .delay(Double(idx) * 0.1),
+                        value: visibleCount
+                    )
+            }
+        }
+        .onAppear {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                visibleCount = words.count
             }
         }
     }

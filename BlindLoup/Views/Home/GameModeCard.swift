@@ -9,7 +9,7 @@ struct GameModeCard: View {
 
     enum Mode {
         case classic, roles
-        var title: String     { self == .classic ? "Classique"    : "Loup-Garou" }
+        var title: String     { self == .classic ? "Classique"    : "Mode infiltré" }
         var subtitle: String  { self == .classic ? "Le blind test" : "Rôles secrets" }
         var description: String {
             self == .classic
@@ -149,9 +149,8 @@ struct ClassicIllustration: View {
             }
 
             // Icône principale
-            Image(systemName: "headphones")
-                .font(.system(size: 52, weight: .thin))
-                .foregroundStyle(Color.appWhite.opacity(0.9))
+            Text("🔍")
+                .font(.system(size: 52))
                 .shadow(color: Color.playerColor(3).opacity(0.6), radius: 12)
         }
         .onAppear { animate = true }
@@ -212,7 +211,7 @@ private struct RolesIllustration: View {
             }
 
             // Loup central
-            Text("🐺")
+            Text(" 🎭")
                 .font(.system(size: 58))
                 .shadow(color: Color.playerColor(1).opacity(0.7), radius: 14)
                 .scaleEffect(animate ? 1.04 : 0.97)
