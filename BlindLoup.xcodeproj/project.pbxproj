@@ -9,10 +9,8 @@
 /* Begin PBXBuildFile section */
 		003D851C8DC333D1D47E0A78 /* PremiumPaywallView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E270CEFB355C3F3AEF584CC7 /* PremiumPaywallView.swift */; };
 		05FBD79280B37030D0AE6D85 /* RevealView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BB89D5D132507466661BEC7 /* RevealView.swift */; };
-		FF11AA22BB33CC44DD55EE66 /* RoundResultBadges.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA22BB33CC44DD55EE66FF11 /* RoundResultBadges.swift */; };
 		10C2A32F8FBACB3421D8ECA3 /* ClassicModeMenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4659E2D6A79F2FF3FD34D85 /* ClassicModeMenuView.swift */; };
 		12C00F2FBEFA76A6AD66E6B4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B20E72F0A3D22D5427BF277F /* Assets.xcassets */; };
-		DD11EE22FF33AA44BB55CC66 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = EE22FF33AA44BB55CC66DD11 /* PrivacyInfo.xcprivacy */; };
 		1D92EF479EBC09C9EDE3BE13 /* TrackRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FFE7CCFD6CA822ABAAFE258F /* TrackRowView.swift */; };
 		22624F8D118C44DB905047D2 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57E623267DA24A6C05051E0C /* RootView.swift */; };
 		22A2920A6CC7161499EB26AE /* GameViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A552CEF19215139CB059CA5 /* GameViewModel.swift */; };
@@ -32,27 +30,34 @@
 		939EA71B899FB388D3519B3A /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E7733A9711C4B44748200C02 /* Foundation.framework */; };
 		97581A32630DC87729AA9EAB /* PlayerScoreRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28F6380223BFCC99A19752C6 /* PlayerScoreRow.swift */; };
 		99DB01F023B0FBF6FCFDC0DF /* SecretSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A3355BCBDF2B99442A90E42 /* SecretSelectionView.swift */; };
+		9A8A81721F9D8CCF9CA571CD /* HowToPlayRolesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB769E0C847A6EA19B9E5199 /* HowToPlayRolesView.swift */; };
 		9EA3F92E7D25B812579EBD82 /* FinalScoreView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DCFA0633758E4837005B5B6 /* FinalScoreView.swift */; };
+		A1B2C3D4E5F6A7B8C9D0E1F2 /* SectionDividerLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2C3D4E5F6A7B8C9D0E1F2A1 /* SectionDividerLabel.swift */; };
 		A2C77200828AA8885F5B2658 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBD47B88F4BDA88561D342EA /* HomeView.swift */; };
+		A2E2F6CA443307995FE9FE95 /* RoleRevealView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 523C4F728341E34BE51969A9 /* RoleRevealView.swift */; };
 		A389B50868B4275E8BF410E2 /* GamePhase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37D0058B32156FBE2E0A93C0 /* GamePhase.swift */; };
 		A3B98D5A0FBCBA6E1DF4AA08 /* ProtectionScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 385D5B0EAD8ACC7AF94AC563 /* ProtectionScreen.swift */; };
+		A3E39ED5A0DFD98A1D02FF2F /* RolesMenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14FEF5AA39FC04A23C2E0698 /* RolesMenuView.swift */; };
+		AA11BB22CC33DD44EE55FF66 /* MusicService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB22CC33DD44EE55FF66AA11 /* MusicService.swift */; };
 		ADDE19FFAE7FF6AFE8E9AE5B /* HowToPlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E1CFCCF6EC1E52F8630118F /* HowToPlayView.swift */; };
 		B206AAF2C31BB3680B6A1CED /* GameHistoryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A1F41B70A4F8CFD30F24AA4 /* GameHistoryService.swift */; };
 		B86650C19159D469B252EF07 /* GameRound.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4E3937510D7D775AB02DC32 /* GameRound.swift */; };
 		BD9871AD3CB7C189BB7BD415 /* GameHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4B53D486C30396A58694713 /* GameHistoryView.swift */; };
 		D0049FE3C4BE4BBD441F0FA6 /* SearchViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4F80C92D56A61360CED0D3F /* SearchViewModel.swift */; };
 		D795CC2F1DA8475A5DCCF7C8 /* TransitionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35D4E7897209D02AF5C54B8A /* TransitionView.swift */; };
+		DD11EE22FF33AA44BB55CC66 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = EE22FF33AA44BB55CC66DD11 /* PrivacyInfo.xcprivacy */; };
 		E285B8792DF6200F865A4888 /* AppColors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8454A6DFDC0A09D7A32A43E9 /* AppColors.swift */; };
 		EDC2AE3EED32F5687CDE1807 /* StoreKitService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11F1ECD9752C7D574E472F0A /* StoreKitService.swift */; };
 		F075F78662236637EDCB099F /* PrimaryButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F1E5E8EC5CED6797F332BDC /* PrimaryButton.swift */; };
-		A1B2C3D4E5F6A7B8C9D0E1F2 /* SectionDividerLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2C3D4E5F6A7B8C9D0E1F2A1 /* SectionDividerLabel.swift */; };
-		AA11BB22CC33DD44EE55FF66 /* MusicService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB22CC33DD44EE55FF66AA11 /* MusicService.swift */; };
+		F1F906CC42B9AF47866C015C /* Role.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63D90ABC020E50BECEB8EE5E /* Role.swift */; };
+		FF11AA22BB33CC44DD55EE66 /* RoundResultBadges.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA22BB33CC44DD55EE66FF11 /* RoundResultBadges.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		028CAA12321DDCBBB812E933 /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		0A552CEF19215139CB059CA5 /* GameViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = GameViewModel.swift; path = BlindLoup/ViewModels/GameViewModel.swift; sourceTree = "<group>"; };
 		11F1ECD9752C7D574E472F0A /* StoreKitService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = StoreKitService.swift; path = BlindLoup/Services/StoreKitService.swift; sourceTree = "<group>"; };
+		14FEF5AA39FC04A23C2E0698 /* RolesMenuView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = RolesMenuView.swift; path = BlindLoup/Views/Roles/RolesMenuView.swift; sourceTree = "<group>"; };
 		197CAC1D692388B6636A043D /* Products.storekit */ = {isa = PBXFileReference; includeInIndex = 1; path = Products.storekit; sourceTree = "<group>"; };
 		25A6071D1FF9B47E27F5FF1F /* PlayerSetupView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PlayerSetupView.swift; path = BlindLoup/Views/Setup/PlayerSetupView.swift; sourceTree = "<group>"; };
 		28F6380223BFCC99A19752C6 /* PlayerScoreRow.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PlayerScoreRow.swift; path = BlindLoup/Views/Components/PlayerScoreRow.swift; sourceTree = "<group>"; };
@@ -62,34 +67,37 @@
 		378F83FF3AE77B1E194E960B /* BlindLoup.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BlindLoup.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		37D0058B32156FBE2E0A93C0 /* GamePhase.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = GamePhase.swift; path = BlindLoup/Models/GamePhase.swift; sourceTree = "<group>"; };
 		385D5B0EAD8ACC7AF94AC563 /* ProtectionScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ProtectionScreen.swift; path = BlindLoup/Views/Components/ProtectionScreen.swift; sourceTree = "<group>"; };
-		BB22CC33DD44EE55FF66AA11 /* MusicService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = MusicService.swift; path = BlindLoup/Services/MusicService.swift; sourceTree = "<group>"; };
-		CC33DD44EE55FF66AA11BB22 /* BlindLoup.entitlements */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.entitlements; path = BlindLoup.entitlements; sourceTree = "<group>"; };
-		EE22FF33AA44BB55CC66DD11 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; name = PrivacyInfo.xcprivacy; path = BlindLoup/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		4BB89D5D132507466661BEC7 /* RevealView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = RevealView.swift; path = BlindLoup/Views/Results/RevealView.swift; sourceTree = "<group>"; };
-		AA22BB33CC44DD55EE66FF11 /* RoundResultBadges.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = RoundResultBadges.swift; path = BlindLoup/Views/Results/RoundResultBadges.swift; sourceTree = "<group>"; };
+		523C4F728341E34BE51969A9 /* RoleRevealView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = RoleRevealView.swift; path = BlindLoup/Views/Roles/RoleRevealView.swift; sourceTree = "<group>"; };
 		5521D8E152D6DBC99C4C7339 /* GameModeCard.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = GameModeCard.swift; path = BlindLoup/Views/Home/GameModeCard.swift; sourceTree = "<group>"; };
 		57E623267DA24A6C05051E0C /* RootView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = RootView.swift; path = BlindLoup/App/RootView.swift; sourceTree = "<group>"; };
 		60D135ECF84D5B5BD60865DF /* VotingView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = VotingView.swift; path = BlindLoup/Views/Voting/VotingView.swift; sourceTree = "<group>"; };
 		60FE86125E4B95F4484FF74E /* AudioPlayerService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AudioPlayerService.swift; path = BlindLoup/Services/AudioPlayerService.swift; sourceTree = "<group>"; };
+		63D90ABC020E50BECEB8EE5E /* Role.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Role.swift; path = BlindLoup/Models/Role.swift; sourceTree = "<group>"; };
 		6F1E5E8EC5CED6797F332BDC /* PrimaryButton.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PrimaryButton.swift; path = BlindLoup/Views/Components/PrimaryButton.swift; sourceTree = "<group>"; };
-		B2C3D4E5F6A7B8C9D0E1F2A1 /* SectionDividerLabel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SectionDividerLabel.swift; path = BlindLoup/Views/Components/SectionDividerLabel.swift; sourceTree = "<group>"; };
 		7E1CFCCF6EC1E52F8630118F /* HowToPlayView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = HowToPlayView.swift; path = BlindLoup/Views/Home/HowToPlayView.swift; sourceTree = "<group>"; };
 		8454A6DFDC0A09D7A32A43E9 /* AppColors.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AppColors.swift; path = BlindLoup/Utilities/AppColors.swift; sourceTree = "<group>"; };
 		962C532D9FA63DBF8FA40A17 /* BlindTestView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = BlindTestView.swift; path = BlindLoup/Views/Game/BlindTestView.swift; sourceTree = "<group>"; };
 		9A1F41B70A4F8CFD30F24AA4 /* GameHistoryService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = GameHistoryService.swift; path = BlindLoup/Services/GameHistoryService.swift; sourceTree = "<group>"; };
 		9A3355BCBDF2B99442A90E42 /* SecretSelectionView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SecretSelectionView.swift; path = BlindLoup/Views/Selection/SecretSelectionView.swift; sourceTree = "<group>"; };
+		AA22BB33CC44DD55EE66FF11 /* RoundResultBadges.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = RoundResultBadges.swift; path = BlindLoup/Views/Results/RoundResultBadges.swift; sourceTree = "<group>"; };
 		B20E72F0A3D22D5427BF277F /* Assets.xcassets */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = BlindLoup/Assets.xcassets; sourceTree = "<group>"; };
+		B2C3D4E5F6A7B8C9D0E1F2A1 /* SectionDividerLabel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SectionDividerLabel.swift; path = BlindLoup/Views/Components/SectionDividerLabel.swift; sourceTree = "<group>"; };
 		B4659E2D6A79F2FF3FD34D85 /* ClassicModeMenuView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ClassicModeMenuView.swift; path = BlindLoup/Views/Home/ClassicModeMenuView.swift; sourceTree = "<group>"; };
+		BB22CC33DD44EE55FF66AA11 /* MusicService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = MusicService.swift; path = BlindLoup/Services/MusicService.swift; sourceTree = "<group>"; };
 		C3D59744A975896B5DA28265 /* TrackSearchView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = TrackSearchView.swift; path = BlindLoup/Views/Selection/TrackSearchView.swift; sourceTree = "<group>"; };
 		C4E3937510D7D775AB02DC32 /* GameRound.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = GameRound.swift; path = BlindLoup/Models/GameRound.swift; sourceTree = "<group>"; };
 		CBD47B88F4BDA88561D342EA /* HomeView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = HomeView.swift; path = BlindLoup/Views/Home/HomeView.swift; sourceTree = "<group>"; };
+		CC33DD44EE55FF66AA11BB22 /* BlindLoup.entitlements */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.entitlements; path = BlindLoup.entitlements; sourceTree = "<group>"; };
 		D97AE535DF4CF2547C032B19 /* Player.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Player.swift; path = BlindLoup/Models/Player.swift; sourceTree = "<group>"; };
+		DB769E0C847A6EA19B9E5199 /* HowToPlayRolesView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = HowToPlayRolesView.swift; path = BlindLoup/Views/Roles/HowToPlayRolesView.swift; sourceTree = "<group>"; };
 		DDDEA05FD2945AED81912968 /* AppConstants.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AppConstants.swift; path = BlindLoup/Utilities/AppConstants.swift; sourceTree = "<group>"; };
 		DEA33716454344D3660EE226 /* BlindLoupApp.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = BlindLoupApp.swift; path = BlindLoup/App/BlindLoupApp.swift; sourceTree = "<group>"; };
 		E270CEFB355C3F3AEF584CC7 /* PremiumPaywallView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PremiumPaywallView.swift; path = BlindLoup/Views/Home/PremiumPaywallView.swift; sourceTree = "<group>"; };
 		E363BF73B84990A0CA754E3F /* Track.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Track.swift; path = BlindLoup/Models/Track.swift; sourceTree = "<group>"; };
 		E4B53D486C30396A58694713 /* GameHistoryView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = GameHistoryView.swift; path = BlindLoup/Views/Home/GameHistoryView.swift; sourceTree = "<group>"; };
 		E7733A9711C4B44748200C02 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS14.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
+		EE22FF33AA44BB55CC66DD11 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; name = PrivacyInfo.xcprivacy; path = BlindLoup/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		EFC0EE6DAF45BB276D007BB7 /* SettingsView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SettingsView.swift; path = BlindLoup/Views/Home/SettingsView.swift; sourceTree = "<group>"; };
 		F4F80C92D56A61360CED0D3F /* SearchViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SearchViewModel.swift; path = BlindLoup/ViewModels/SearchViewModel.swift; sourceTree = "<group>"; };
 		FAD7F2B7102842EC19EB91B3 /* Extensions.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Extensions.swift; path = BlindLoup/Utilities/Extensions.swift; sourceTree = "<group>"; };
@@ -128,6 +136,7 @@
 				B259E09E709FBAFEF2947D5D /* Voting */,
 				6ADAFD0049B96C373BDD4F80 /* Results */,
 				11590019114F9AD52C229B7E /* Components */,
+				AFC08361FFAA56168C34F37F /* Roles */,
 			);
 			name = Views;
 			sourceTree = "<group>";
@@ -241,6 +250,16 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		AFC08361FFAA56168C34F37F /* Roles */ = {
+			isa = PBXGroup;
+			children = (
+				14FEF5AA39FC04A23C2E0698 /* RolesMenuView.swift */,
+				523C4F728341E34BE51969A9 /* RoleRevealView.swift */,
+				DB769E0C847A6EA19B9E5199 /* HowToPlayRolesView.swift */,
+			);
+			name = Roles;
+			sourceTree = "<group>";
+		};
 		B259E09E709FBAFEF2947D5D /* Voting */ = {
 			isa = PBXGroup;
 			children = (
@@ -256,6 +275,7 @@
 				E363BF73B84990A0CA754E3F /* Track.swift */,
 				C4E3937510D7D775AB02DC32 /* GameRound.swift */,
 				37D0058B32156FBE2E0A93C0 /* GamePhase.swift */,
+				63D90ABC020E50BECEB8EE5E /* Role.swift */,
 			);
 			name = Models;
 			sourceTree = "<group>";
@@ -395,6 +415,10 @@
 				1D92EF479EBC09C9EDE3BE13 /* TrackRowView.swift in Sources */,
 				97581A32630DC87729AA9EAB /* PlayerScoreRow.swift in Sources */,
 				A3B98D5A0FBCBA6E1DF4AA08 /* ProtectionScreen.swift in Sources */,
+				F1F906CC42B9AF47866C015C /* Role.swift in Sources */,
+				A3E39ED5A0DFD98A1D02FF2F /* RolesMenuView.swift in Sources */,
+				A2E2F6CA443307995FE9FE95 /* RoleRevealView.swift in Sources */,
+				9A8A81721F9D8CCF9CA571CD /* HowToPlayRolesView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
