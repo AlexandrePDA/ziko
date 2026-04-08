@@ -19,6 +19,13 @@ struct RootView: View {
                         removal: .move(edge: .leading)
                     ))
 
+            case .rolesMenu:
+                RolesMenuView()
+                    .transition(.asymmetric(
+                        insertion: .move(edge: .trailing),
+                        removal: .move(edge: .leading)
+                    ))
+
             case .setup:
                 PlayerSetupView()
                     .transition(.asymmetric(
@@ -32,6 +39,14 @@ struct RootView: View {
                     .transition(.asymmetric(
                         insertion: .move(edge: .trailing),
                         removal: .move(edge: .leading)
+                    ))
+
+            case .roleReveal(let idx):
+                RoleRevealView(playerIndex: idx)
+                    .id("rolereveal-\(idx)")
+                    .transition(.asymmetric(
+                        insertion: .move(edge: .bottom),
+                        removal: .opacity
                     ))
 
             case .transition(let nextIdx):
