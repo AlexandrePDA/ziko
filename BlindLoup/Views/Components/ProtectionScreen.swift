@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct ProtectionScreen: View {
+    @Environment(GameViewModel.self) private var vm
     let message: Text
     let onReady: () -> Void
 
@@ -13,7 +14,8 @@ struct ProtectionScreen: View {
             VStack(spacing: 32) {
                 Image(systemName: "eye.slash.fill")
                     .font(.system(size: 60))
-                    .foregroundStyle(Color.appOrange)
+                    .foregroundStyle(vm.themeColor)
+                    .accessibilityHidden(true)
 
                 message
                     .font(.title2)
@@ -21,7 +23,7 @@ struct ProtectionScreen: View {
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 32)
 
-                PrimaryButton(title: "Je suis prêt(e)") {
+                PrimaryButton(title: "Je suis prêt(e)", color: vm.themeColor) {
                     onReady()
                 }
                 .padding(.horizontal, 32)

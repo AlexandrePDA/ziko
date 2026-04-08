@@ -2,6 +2,7 @@ import SwiftUI
 
 struct PrimaryButton: View {
     let title: String
+    var color: Color = Color.appOrange
     var isDisabled: Bool = false
     let action: () -> Void
 
@@ -12,7 +13,7 @@ struct PrimaryButton: View {
                 .foregroundStyle(Color.appWhite)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 16)
-                .background(Color.appOrange)
+                .background(color)
                 .clipShape(RoundedRectangle(cornerRadius: 14))
                 .opacity(isDisabled ? 0.4 : 1)
         }

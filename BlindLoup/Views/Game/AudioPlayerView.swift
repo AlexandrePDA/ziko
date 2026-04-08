@@ -40,12 +40,14 @@ struct AudioPlayerView: View {
                         .font(.title2)
                         .foregroundStyle(Color.appWhite)
                 }
+                .accessibilityLabel("Reculer de 10 secondes")
 
                 Button(action: togglePlayPause) {
                     Image(systemName: audioService.isPlaying ? "pause.circle.fill" : "play.circle.fill")
                         .font(.system(size: 56))
                         .foregroundStyle(Color.appOrange)
                 }
+                .accessibilityLabel(audioService.isPlaying ? "Pause" : "Lecture")
 
                 Button(action: {
                     audioService.seek(to: min(1, audioService.progress + seekDelta()))
@@ -54,6 +56,7 @@ struct AudioPlayerView: View {
                         .font(.title2)
                         .foregroundStyle(Color.appWhite)
                 }
+                .accessibilityLabel("Avancer de 10 secondes")
             }
         }
         .padding(.horizontal, 24)

@@ -104,7 +104,7 @@ private struct SessionCard: View {
 
             // Player results sorted by score
             VStack(spacing: 6) {
-                ForEach(Array(session.players.sorted { $0.score > $1.score }.enumerated()), id: \.offset) { _, player in
+                ForEach(session.players.sorted { $0.score > $1.score }, id: \.name) { player in
                     HStack {
                         Text(player.name)
                             .font(.subheadline)
