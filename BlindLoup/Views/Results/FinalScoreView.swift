@@ -5,22 +5,43 @@ struct FinalScoreView: View {
     @Environment(GameViewModel.self) private var vm
     @State private var podiumVisible = false
     @State private var showConfetti = false
+    @State private var showRolesLegend = false
 
     private var ranking: [Player] { vm.finalRanking }
     private var top3: [Player]  { Array(ranking.prefix(3)) }
     private var rest: [Player]  { ranking.count > 3 ? Array(ranking.dropFirst(3)) : [] }
+    private var invincibilityWinners: [Player] { vm.invincibilityWinners }
+    private var displayedBonuses: [GameViewModel.RoleBonus] {
+        vm.roleBonusResults.filter { $0.role != .sniper && $0.role != .provocateur }
+    }
 
     var body: some View {
         ZStack {
             Color.appBlack.ignoresSafeArea()
 
             VStack(spacing: 0) {
-                // Titre
-                Text("Résultats")
-                    .font(.title.weight(.black))
-                    .foregroundStyle(Color.appWhite)
-                    .padding(.top, 32)
-                    .padding(.bottom, 20)
+                // Titre + bouton rôles
+                ZStack {
+                    Text("Résultats")
+                        .font(.title.weight(.black))
+                        .foregroundStyle(Color.appWhite)
+
+                    if vm.gameMode == .roles {
+                        HStack {
+                            Spacer()
+                            Button { showRolesLegend = true } label: {
+                                Image(systemName: "info.circle")
+                                    .font(.title3)
+                                    .foregroundStyle(Color.appGrey)
+                                    .frame(width: 44, height: 44)
+                            }
+                            .accessibilityLabel("Les rôles")
+                        }
+                        .padding(.horizontal, 12)
+                    }
+                }
+                .padding(.top, 32)
+                .padding(.bottom, 20)
 
                 // Podium
                 PodiumView(top3: top3, visible: podiumVisible)
@@ -65,31 +86,32 @@ struct FinalScoreView: View {
                     .animation(.easeOut(duration: 0.4).delay(0.6), value: podiumVisible)
                 }
 
-                // Bonus invincibilité (tout en bas du classement)
-                if !vm.invincibilityWinners.isEmpty {
+                // Bonus invincibilité + bonus de rôles
+                if !invincibilityWinners.isEmpty || !displayedBonuses.isEmpty {
                     VStack(spacing: 8) {
                         SectionDividerLabel(title: "BONUS PARTIE", color: Color.scoreBonus)
                             .padding(.horizontal, 20)
 
-                        ForEach(vm.invincibilityWinners) { player in
-                            HStack(spacing: 12) {
-                                Circle()
-                                    .fill(Color.playerColor(player.colorIndex))
-                                    .frame(width: 10, height: 10)
-                                Text(player.name)
-                                    .font(.subheadline)
-                                    .foregroundStyle(Color.appWhite)
-                                Spacer()
-                                Text("+20 pts — aucune musique trouvée ✨")
-                                    .font(.caption)
-                                    .fontWeight(.semibold)
-                                    .foregroundStyle(Color.scoreBonus)
-                            }
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 10)
-                            .background(Color.scoreBonus.opacity(0.12))
-                            .clipShape(RoundedRectangle(cornerRadius: 10))
-                            .padding(.horizontal, 20)
+                        // Crime Parfait (tous modes)
+                        ForEach(invincibilityWinners) { player in
+                            BonusRow(
+                                colorIndex: player.colorIndex,
+                                name: player.name,
+                                label: "+\(ScoringConfig.invincibilityBonus) pts — aucune musique trouvée ✨",
+                                labelColor: Color.scoreBonus,
+                                bgColor: Color.scoreBonus
+                            )
+                        }
+
+                        // Bonus de rôles (mode Rôles uniquement)
+                        ForEach(Array(displayedBonuses.enumerated()), id: \.offset) { _, bonus in
+                            BonusRow(
+                                colorIndex: bonus.player.colorIndex,
+                                name: bonus.player.name,
+                                label: roleBonusText(bonus),
+                                labelColor: bonus.succeeded ? bonus.role.accentColor : Color.appGrey,
+                                bgColor: bonus.succeeded ? bonus.role.accentColor : Color.appSurface
+                            )
                         }
                     }
                     .padding(.top, 16)
@@ -101,7 +123,7 @@ struct FinalScoreView: View {
 
                 // Actions
                 VStack(spacing: 12) {
-                    PrimaryButton(title: "Rejouer (mêmes joueurs)") {
+                    PrimaryButton(title: "Rejouer (mêmes joueurs)", color: vm.themeColor) {
                         vm.resetGame(keepPlayers: true)
                     }
                     Button("Retour à l'accueil") {
@@ -121,12 +143,59 @@ struct FinalScoreView: View {
                     .allowsHitTesting(false)
             }
         }
+        .sheet(isPresented: $showRolesLegend) { RolesLegendeView() }
         .onAppear {
             withAnimation(.spring(response: 0.6, dampingFraction: 0.75).delay(0.15)) {
                 podiumVisible = true
             }
             showConfetti = true
         }
+    }
+
+    private func roleBonusText(_ bonus: GameViewModel.RoleBonus) -> String {
+        let emoji = bonus.role.emoji
+        let name = bonus.role.title
+        if bonus.succeeded {
+            if bonus.points > 0 {
+                return "\(emoji) \(name) · +\(bonus.points) pts — \(bonus.label)"
+            } else {
+                return "\(emoji) \(name) · \(bonus.label)"
+            }
+        } else {
+            return "\(emoji) \(name) · Mission échouée"
+        }
+    }
+}
+
+// MARK: - BonusRow
+
+private struct BonusRow: View {
+    let colorIndex: Int
+    let name: String
+    let label: String
+    let labelColor: Color
+    let bgColor: Color
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Circle()
+                .fill(Color.playerColor(colorIndex))
+                .frame(width: 10, height: 10)
+            Text(name)
+                .font(.subheadline)
+                .foregroundStyle(Color.appWhite)
+            Spacer()
+            Text(label)
+                .font(.caption)
+                .fontWeight(.semibold)
+                .foregroundStyle(labelColor)
+                .multilineTextAlignment(.trailing)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
+        .background(bgColor.opacity(0.12))
+        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .padding(.horizontal, 20)
     }
 }
 

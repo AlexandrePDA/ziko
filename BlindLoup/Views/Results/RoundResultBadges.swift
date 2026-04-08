@@ -177,22 +177,22 @@ struct LegendeView: View {
 
     private let entries: [LegendEntry] = [
         LegendEntry(emoji: "☠️", title: "HONTE SUPRÊME",
-                    condition: "Tu pensais être imprévisible. Tu avais l'originalité d'un générique de supermarché. Chaque suspect du groupe t'a désigné sans hésiter. C'est beau, dans le genre catastrophique.",
+                    condition: "Tout le monde a trouvé ta musique... Tu pensais être imprévisible. Tu avais l'originalité d'un générique de supermarché. Chaque suspect du groupe t'a désigné sans hésiter. C'est beau, dans le genre catastrophique.",
                     color: .red, isEndGame: false),
         LegendEntry(emoji: "🟢", title: "L'INSAISISSABLE",
-                    condition: "Aucune trace. Aucun indice. Aucune pitié. Tu as semé tout le monde et tu le sais très bien.",
+                    condition: "Personne n'a trouvé ta musique. Aucune trace. Aucun indice. Aucune pitié. Tu as semé tout le monde et tu le sais très bien.",
                     color: .green, isEndGame: false),
         LegendEntry(emoji: "🕯️", title: "LE FIN LIMIER",
                     condition: "Là où tout le monde a raté, lui a trouvé. Seul contre tous. C'est ça, le vrai flair.",
                     color: Color.appOrange, isEndGame: false),
         LegendEntry(emoji: "⚫", title: "LE CRIME PARFAIT",
-                    condition: "Toute la partie. Sans une seule fausse note. L'affaire est classée — sans suite, sans suspect, sans toi. Chef-d'œuvre.",
+                    condition: "Personne n'a trouvé AUCUNE de tes musiques. Toute la partie. Sans une seule fausse note. L'affaire est classée — sans suite, sans suspect, sans toi. Chef-d'œuvre.",
                     color: Color.appGreyLight, isEndGame: true),
         LegendEntry(emoji: "🔵", title: "L'INSPECTEUR IMPLACABLE",
-                    condition: "Pendant que les autres écoutaient, toi tu analysais. Chaque morceau était un indice. Chaque indice, une condamnation.",
+                    condition: "Tu as trouvé le plus de musiques. Pendant que les autres écoutaient, toi tu analysais. Chaque morceau était un indice. Chaque indice, une condamnation.",
                     color: Color.appAccent, isEndGame: true),
         LegendEntry(emoji: "🟣", title: "LE TÉMOIN GÊNANT",
-                    condition: "Tu sais. Il sait que tu sais. Tout le monde sait que tu sais. Ambiance.",
+                    condition: "Tu as tout trouvé toutes les musiques d’un joueur. Tu sais. Il sait que tu sais. Tout le monde sait que tu sais. Ambiance.",
                     color: .purple, isEndGame: true),
     ]
 

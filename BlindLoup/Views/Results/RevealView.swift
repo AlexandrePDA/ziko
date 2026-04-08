@@ -4,30 +4,30 @@ struct RevealView: View {
     @Environment(GameViewModel.self) private var vm
     let roundIndex: Int
 
-    @State private var countdown: Int = 3
-    @State private var revealed: Bool = false
-    @State private var timer: Timer? = nil
-    @State private var showLegende: Bool = false
+    @State private var countdown = 3
+    @State private var revealed = false
+    @State private var timer: Timer?
+    @State private var showLegende = false
 
     // MARK: - Derived state
 
-    var round: GameRound? {
+    private var round: GameRound? {
         vm.rounds.indices.contains(roundIndex) ? vm.rounds[roundIndex] : nil
     }
 
-    var owner: Player? {
+    private var owner: Player? {
         guard let round else { return nil }
         return vm.players.first(where: { $0.id == round.track.ownerID })
     }
 
-    var correctVoters: [Player] {
+    private var correctVoters: [Player] {
         guard let round else { return [] }
         return vm.players.filter { $0.id != round.track.ownerID && round.votes[$0.id] == round.track.ownerID }
     }
 
-    var otherPlayersCount: Int { vm.players.count - 1 }
+    private var otherPlayersCount: Int { vm.players.count - 1 }
 
-    var scoreCase: ScoreCase {
+    private var scoreCase: ScoreCase {
         let count = correctVoters.count
         if count == 0                  { return .nobodyFound }
         if count == otherPlayersCount  { return .everyoneFound }
@@ -85,7 +85,7 @@ struct RevealView: View {
                 .foregroundStyle(Color.appGrey)
             Text("\(countdown)")
                 .font(.system(size: 100, weight: .black))
-                .foregroundStyle(Color.appOrange)
+                .foregroundStyle(vm.themeColor)
                 .contentTransition(.numericText())
                 .animation(.spring, value: countdown)
         }
@@ -119,7 +119,7 @@ struct RevealView: View {
                 .padding(.horizontal, 20)
             }
 
-            PrimaryButton(title: isLastRound ? "Voir les scores finaux" : "Manche suivante") {
+            PrimaryButton(title: isLastRound ? "Voir les scores finaux" : "Manche suivante", color: vm.themeColor) {
                 vm.advancePhase()
             }
             .padding(.horizontal, 20)
@@ -212,29 +212,50 @@ struct RevealView: View {
         }
     }
 
-    // MARK: - Score breakdown
+    // MARK: - Score breakdown (per-player)
 
     @ViewBuilder
     private func breakdownRows(for player: Player, round: GameRound) -> some View {
-        switch scoreCase {
-        case .nobodyFound:
-            scoreRow("+30 pts", "Bluffeur parfait 🕵️", color: Color.appAccent)
+        let isOwner      = player.id == round.track.ownerID
+        let didFind      = correctVoters.contains { $0.id == player.id }
+        let isSole       = scoreCase == .soleFound && didFind
+        let usedDoubling = round.doublingVoters.contains(player.id)
+        let isSniper     = vm.gameMode == .roles && vm.role(for: player.id) == .sniper
+        let isProv       = vm.gameMode == .roles && vm.role(for: player.id) == .provocateur
 
-        case .everyoneFound:
-            if player.id == round.track.ownerID {
-                scoreRow("−10 pts", "Tout le monde a trouvé 😬", color: Color.scorePenalty)
+        VStack(spacing: 8) {
+            if isOwner {
+                switch scoreCase {
+                case .nobodyFound:
+                    scoreRow("+30 pts", "Bluffeur parfait 🕵️",        color: Color.appAccent)
+                case .everyoneFound:
+                    scoreRow("−10 pts", "Tout le monde a trouvé 😬",   color: Color.scorePenalty)
+                default:
+                    EmptyView()
+                }
+            } else if didFind {
+                scoreRow("+10 pts", "A trouvé le propriétaire 🎯",     color: Color.appAccent)
+                if isSole {
+                    scoreRow("+20 pts", "Seul(e) à avoir trouvé 🔥",   color: Color.scoreBonus)
+                }
+                if isSniper {
+                    scoreRow("+10 pts", "Bonus Sniper — vote doublé 🎯", color: RoleType.sniper.accentColor)
+                }
+                if isProv && usedDoubling {
+                    scoreRow("+10 pts", "Mise doublée — bonne accusation 🃏", color: RoleType.provocateur.accentColor)
+                }
             } else {
-                scoreRow("+10 pts", "A trouvé le propriétaire 🎯", color: Color.appAccent)
+                // Mauvais vote — uniquement via modificateurs de rôle
+                if isSniper {
+                    scoreRow("−\(ScoringConfig.sniperWrongPenalty) pts",
+                             "Mauvaise accusation · Sniper 🎯",         color: Color.scorePenalty)
+                }
+                if isProv && usedDoubling {
+                    let penalty = ScoringConfig.finderPoints * ScoringConfig.provocateurMultiplier
+                    scoreRow("−\(penalty) pts",
+                             "Mise doublée perdue 🃏",                  color: Color.scorePenalty)
+                }
             }
-
-        case .soleFound:
-            VStack(spacing: 8) {
-                scoreRow("+10 pts", "A trouvé le propriétaire 🎯", color: Color.appAccent)
-                scoreRow("+20 pts", "Seul(e) à avoir trouvé 🔥",  color: Color.scoreBonus)
-            }
-
-        case .multipleFound:
-            scoreRow("+10 pts", "A trouvé le propriétaire 🎯", color: Color.appAccent)
         }
     }
 
