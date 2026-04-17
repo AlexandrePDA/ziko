@@ -1,16 +1,19 @@
 import SwiftUI
 
 struct PrimaryButton: View {
+    @Environment(SoundService.self) private var sound
+
     let title: String
     var color: Color = Color.appOrange
+    var textColor: Color = Color.appWhite
     var isDisabled: Bool = false
     let action: () -> Void
 
     var body: some View {
-        Button(action: action) {
+        Button(action: { sound.playTap(); action() }) {
             Text(title)
                 .font(.headline)
-                .foregroundStyle(Color.appWhite)
+                .foregroundStyle(textColor)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 16)
                 .background(color)

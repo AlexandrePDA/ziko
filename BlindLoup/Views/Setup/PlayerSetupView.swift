@@ -133,7 +133,7 @@ struct PlayerSetupView: View {
                         }
                     }
 
-                    PrimaryButton(title: "Commencer", color: vm.themeColor, isDisabled: !canStart) {
+                    PrimaryButton(title: "Commencer", color: vm.themeColor, textColor: .appBackground, isDisabled: !canStart) {
                         vm.startFirstPlayer()
                     }
                 }
@@ -148,7 +148,7 @@ struct PlayerSetupView: View {
         } message: {
             Text(vm.storeService.isPremium
                  ? "Maximum \(vm.maxPlayers) joueurs."
-                 : "La version gratuite est limitée à \(GameConfig.freeMaxPlayers) joueurs. Passez Premium pour jouer jusqu'à 8 !")
+                 : "La version gratuite est limitée à \(GameConfig.freeMaxPlayers) joueurs. Passez ALIIIBI+ pour jouer jusqu'à 8 !")
         }
         .alert("Modifier le joueur", isPresented: $showEditAlert) {
             TextField("Prénom", text: $editedName)

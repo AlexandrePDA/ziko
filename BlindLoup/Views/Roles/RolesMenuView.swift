@@ -41,18 +41,17 @@ struct RolesMenuView: View {
 
                 // ── Title ─────────────────────────────────────────
                 VStack(spacing: 6) {
-                    Text("Rôles Secrets")
+                    Text("Mode infiltré")
                         .font(.system(size: 32, weight: .black))
                         .foregroundStyle(Color.appWhite)
-                    Text("Chaque joueur reçoit un rôle secret.\nAccomplis ta mission pour décrocher le bonus.")
+                    Text("Chaque joueur reçoit un rôle secret. Accomplis ta mission pour décrocher le bonus.")
                         .font(.subheadline)
                         .foregroundStyle(Color.appGrey)
                         .multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
                 .padding(.top, 16)
-                .padding(.bottom, 28)
-
-                Spacer()
+                .padding(.bottom, 20)
 
                 // ── Menu items ────────────────────────────────────
                 VStack(spacing: 14) {
@@ -115,16 +114,17 @@ struct RolesMenuView: View {
             Spacer()
             if locked {
                 HStack(spacing: 4) {
-                    Image(systemName: "crown.fill")
+                    Text("👑")
                         .font(.system(size: 9))
-                    Text("PREMIUM")
+                    Text("ALIIIBI+")
                         .font(.system(size: 10, weight: .black))
                 }
-                .foregroundStyle(Color.appBackground)
+                .foregroundStyle(Color.appPremiumGold)
                 .padding(.horizontal, 8)
                 .padding(.vertical, 4)
-                .background(Color.appAccent)
+                .background(Color.appPremiumGold.opacity(0.22))
                 .clipShape(Capsule())
+                .overlay(Capsule().strokeBorder(Color.appPremiumGold.opacity(0.7), lineWidth: 1))
             } else {
                 Image(systemName: "arrow.right")
                     .font(.subheadline)
@@ -249,7 +249,7 @@ struct RolesMenuIllustration: View {
     @State private var animate = false
 
     private let roleEmojis: [(String, CGFloat, CGFloat)] = [
-        ("🕵️", -90, -30),
+        ("🎭", -90, -30),
         ("🔎",  85, -40),
         ("🎯", -60,  40),
         ("🃏",  70,  35),
@@ -286,7 +286,7 @@ struct RolesMenuIllustration: View {
                     )
             }
 
-            Text("🐺")
+            Text("🕵️")
                 .font(.system(size: 62))
                 .shadow(color: Color.playerColor(1).opacity(0.8), radius: 16)
                 .scaleEffect(animate ? 1.05 : 0.96)

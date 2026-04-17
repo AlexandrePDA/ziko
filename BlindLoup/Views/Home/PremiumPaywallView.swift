@@ -26,16 +26,14 @@ struct PremiumPaywallView: View {
                 Spacer()
 
                 // Icon
-                Image(systemName: "crown.fill")
+                Text("👑")
                     .font(.system(size: 64))
-                    .foregroundStyle(Color.appOrange)
                     .padding(.bottom, 16)
 
                 HStack(spacing: 6) {
-                    Text("ALIIIBI")
-                        .foregroundStyle(Color.appWhite)
-                    Text("Premium")
-                        .foregroundStyle(Color.appAccent)
+                  
+                    Text("ALIIIBI+")
+                        .foregroundStyle(Color.appPremiumGold)
                 }
                 .font(.largeTitle)
                 .fontWeight(.black)
@@ -66,17 +64,19 @@ struct PremiumPaywallView: View {
                 // CTA
                 VStack(spacing: 12) {
                     if store.isLoading {
-                        ProgressView().tint(Color.appOrange)
+                        ProgressView().tint(Color.appPremiumGold)
 
                     } else if store.isLoadingProducts {
                         VStack(spacing: 8) {
-                            ProgressView().tint(Color.appOrange)
+                            ProgressView().tint(Color.appPremiumGold)
                             Text("Chargement…")
                                 .font(.caption).foregroundStyle(Color.appGrey)
                         }
 
                     } else if store.isProductAvailable {
-                        PrimaryButton(title: "Débloquer Premium") {
+                        PrimaryButton(title: "Débloquer ALIIIBI+",
+                                      color: Color.appPremiumGold,
+                                      textColor: Color.appBackground) {
                             Task { try? await store.purchasePremium() }
                         }
                         Button("Restaurer les achats") {
@@ -93,9 +93,9 @@ struct PremiumPaywallView: View {
                         }
                         Button(action: { Task { await store.loadProducts() } }) {
                             Text("Réessayer")
-                                .font(.headline).foregroundStyle(Color.appOrange)
+                                .font(.headline).foregroundStyle(Color.appPremiumGold)
                                 .frame(maxWidth: .infinity).padding(.vertical, 14)
-                                .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color.appOrange, lineWidth: 1.5))
+                                .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color.appPremiumGold, lineWidth: 1.5))
                         }
                         #if DEBUG
                         Button(action: { store.activatePremiumForTesting() }) {
@@ -126,7 +126,7 @@ private struct FeatureRow: View {
         HStack(spacing: 16) {
             Image(systemName: icon)
                 .frame(width: 28)
-                .foregroundStyle(Color.appOrange)
+                .foregroundStyle(Color.appPremiumGold)
             Text(text)
                 .foregroundStyle(Color.appWhite)
             Spacer()

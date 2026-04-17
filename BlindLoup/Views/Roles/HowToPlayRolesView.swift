@@ -14,7 +14,7 @@ private struct RolesSlide {
 
 private let rolesSlides: [RolesSlide] = [
     RolesSlide(
-        emoji: "🕵️",
+        emoji: "🔍",
         title: "Le concept",
         body: "Tes amis pensent te connaître.\nProuve-leur qu'ils ont tort.\n\nAliiibi, c'est le jeu où l'on partage ses musiques, en toute discrétion… et où l'on tente de griller celles des autres."
     ),
@@ -31,11 +31,11 @@ private let rolesSlides: [RolesSlide] = [
         noteEmoji: "🏅"
     ),
     RolesSlide(
-        emoji: "🎭",
-        title: "Mode Premium : les rôles",
+        emoji: "🕵️",
+        title: "Mode ALIIIBI+ : les rôles",
         body: "Le mode Enquête change tout.\n\nAvant même que la musique commence, certains joueurs reçoivent une mission secrète. Un rôle. Des règles connues d'eux seuls.",
         note: "Certains sont là pour bluffer. D'autres pour piéger. D'autres encore… pour souffrir.\nTu sauras lequel tu es. Les autres, jamais — jusqu'à la fin.",
-        noteEmoji: "🎭",
+        noteEmoji: "🕵️",
         accentColor: Color.playerColor(1)
     ),
     RolesSlide(
@@ -146,7 +146,7 @@ private struct RolesSlideView: View {
                     .foregroundStyle(Color.appBackground)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 16)
-                    .background(slide.accentColor)
+                    .background(Color.appPremiumGold)
                     .clipShape(RoundedRectangle(cornerRadius: 14))
             }
             .buttonStyle(.plain)

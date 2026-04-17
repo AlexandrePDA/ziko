@@ -107,16 +107,17 @@ struct ClassicModeMenuView: View {
                             Spacer()
                             if !store.isPremium {
                                 HStack(spacing: 4) {
-                                    Image(systemName: "crown.fill")
+                                    Text("👑")
                                         .font(.system(size: 9))
-                                    Text("PREMIUM")
+                                    Text("ALIIIBI+")
                                         .font(.system(size: 10, weight: .black))
                                 }
-                                .foregroundStyle(Color.appBackground)
+                                .foregroundStyle(Color.appPremiumGold)
                                 .padding(.horizontal, 8)
                                 .padding(.vertical, 4)
-                                .background(Color.appAccent)
+                                .background(Color.appPremiumGold.opacity(0.22))
                                 .clipShape(Capsule())
+                                .overlay(Capsule().strokeBorder(Color.appPremiumGold.opacity(0.7), lineWidth: 1))
                             } else {
                                 Image(systemName: "arrow.right")
                                     .font(.subheadline)

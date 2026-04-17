@@ -10,7 +10,7 @@ struct GameModeCard: View {
     enum Mode {
         case classic, roles
         var title: String     { self == .classic ? "Classique"    : "Mode infiltré" }
-        var subtitle: String  { self == .classic ? "Le blind test" : "Rôles secrets" }
+        var subtitle: String  { self == .classic ? "Le blind test" : "Mode infiltré" }
         var description: String {
             self == .classic
                 ? "Devine à qui appartient chaque morceau. Vote, bluff et marque des points."
@@ -41,16 +41,17 @@ struct GameModeCard: View {
                             HStack {
                                 Spacer()
                                 HStack(spacing: 4) {
-                                    Image(systemName: "crown.fill")
+                                    Text("👑")
                                         .font(.system(size: 9))
-                                    Text("PREMIUM")
+                                    Text("ALIIIBI+")
                                         .font(.system(size: 10, weight: .black))
                                 }
-                                .foregroundStyle(Color.appBackground)
+                                .foregroundStyle(Color.appPremiumGold)
                                 .padding(.horizontal, 9)
                                 .padding(.vertical, 5)
-                                .background(Color.appAccent)
+                                .background(Color.appPremiumGold.opacity(0.22))
                                 .clipShape(Capsule())
+                                .overlay(Capsule().strokeBorder(Color.appPremiumGold.opacity(0.7), lineWidth: 1))
                                 .padding(12)
                             }
                             Spacer()
@@ -210,8 +211,8 @@ private struct RolesIllustration: View {
                     )
             }
 
-            // Loup central
-            Text(" 🎭")
+     
+            Text("🕵️")
                 .font(.system(size: 58))
                 .shadow(color: Color.playerColor(1).opacity(0.7), radius: 14)
                 .scaleEffect(animate ? 1.04 : 0.97)

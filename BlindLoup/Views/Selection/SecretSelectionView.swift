@@ -98,6 +98,7 @@ struct SecretSelectionView: View {
                         PrimaryButton(
                             title: playerIndex == vm.players.count - 1 ? "Lancer le jeu" : "Suivant",
                             color: vm.themeColor,
+                            textColor: .appBackground,
                             isDisabled: !canContinue
                         ) {
                             vm.advancePhase()
