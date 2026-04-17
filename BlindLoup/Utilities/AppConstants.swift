@@ -44,7 +44,7 @@ struct BadgeTitles {
 }
 
 struct StoreConfig {
-    static let premiumProductID = "com.blindloup.premium"
+    static let premiumProductID = "com.apda.aliiibi.premium"
 }
 
 struct StorageKeys {

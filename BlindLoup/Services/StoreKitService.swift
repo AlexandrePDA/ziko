@@ -12,11 +12,37 @@ final class StoreKitService {
 
     private var product: Product?
     private let productID = StoreConfig.premiumProductID
+    private var updatesTask: Task<Void, Never>?
 
     init() {
         isPremium = UserDefaults.standard.bool(forKey: StorageKeys.isPremium)
         Task { await loadProducts() }
         Task { await verifyEntitlements() }
+        updatesTask = listenForTransactionUpdates()
+    }
+
+    deinit {
+        updatesTask?.cancel()
+    }
+
+    /// Écoute en continu les mises à jour de transactions (Ask-to-Buy, révocations, achats externes).
+    private func listenForTransactionUpdates() -> Task<Void, Never> {
+        Task(priority: .background) { [weak self] in
+            for await result in Transaction.updates {
+                guard let self else { break }
+                if case .verified(let transaction) = result {
+                    if transaction.productID == self.productID {
+                        if transaction.revocationDate != nil {
+                            // Achat révoqué (remboursement)
+                            await self.setPremium(false)
+                        } else {
+                            await self.setPremium(true)
+                        }
+                    }
+                    await transaction.finish()
+                }
+            }
+        }
     }
 
     @MainActor
