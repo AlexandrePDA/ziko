@@ -2,6 +2,7 @@ import SwiftUI
 
 struct RevealView: View {
     @Environment(GameViewModel.self) private var vm
+    @Environment(SoundService.self) private var sound
     let roundIndex: Int
 
     @State private var countdown = 3
@@ -33,29 +34,6 @@ struct RevealView: View {
         if count == otherPlayersCount  { return .everyoneFound }
         if count == 1                  { return .soleFound }
         return .multipleFound
-    }
-
-    private var roundDeltas: [UUID: Int] {
-        guard let round else { return [:] }
-        return vm.calculateRoundScore(round: round)
-    }
-
-    private var playersWithDeltas: [(player: Player, delta: Int)] {
-        vm.players
-            .compactMap { player -> (Player, Int)? in
-                guard let delta = roundDeltas[player.id], delta != 0 else { return nil }
-                return (player, delta)
-            }
-            .sorted { $0.1 > $1.1 }
-    }
-
-    private var roundBadges: [RoundBadge] {
-        guard let owner else { return [] }
-        return RoundBadgeFactory.badges(
-            scoreCase: scoreCase,
-            owner: owner,
-            soleDetective: scoreCase == .soleFound ? correctVoters.first : nil
-        )
     }
 
     private var isLastRound: Bool { roundIndex == vm.rounds.count - 1 }
@@ -93,11 +71,14 @@ struct RevealView: View {
     }
 
     private func startCountdown() {
+        sound.playCountdownTick()
         timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { t in
             if countdown > 1 {
                 withAnimation { countdown -= 1 }
+                sound.playCountdownTick()
             } else {
                 t.invalidate()
+                sound.playReveal()
                 withAnimation(.spring) { revealed = true }
             }
         }
@@ -110,11 +91,17 @@ struct RevealView: View {
             legendeButton
 
             ScrollView {
-                VStack(spacing: 28) {
+                VStack(spacing: 20) {
                     trackRow
                     ownerSection
-                    RoundResultBadges(badges: roundBadges)
-                    scoreSection
+                    if let round {
+                        RoundResultSection(
+                            round: round,
+                            players: vm.players,
+                            scoreCase: scoreCase,
+                            playerRoles: vm.playerRoles
+                        )
+                    }
                 }
                 .padding(.horizontal, 20)
             }
@@ -184,95 +171,5 @@ struct RevealView: View {
                     .multilineTextAlignment(.center)
             }
         }
-    }
-
-    @ViewBuilder
-    private var scoreSection: some View {
-        if !playersWithDeltas.isEmpty {
-            VStack(alignment: .leading, spacing: 16) {
-                SectionDividerLabel(title: "SCORE", color: Color.appAccent)
-
-                ForEach(playersWithDeltas, id: \.player.id) { item in
-                    VStack(alignment: .leading, spacing: 8) {
-                        (Text(item.player.name)
-                            .foregroundStyle(Color.playerColor(item.player.colorIndex))
-                         + Text(item.delta > 0 ? " remporte " : " perd ")
-                            .foregroundStyle(Color.appWhite)
-                         + Text("\(abs(item.delta)) pts")
-                            .foregroundStyle(Color.appWhite))
-                        .font(.title3.weight(.black))
-
-                        if let round {
-                            breakdownRows(for: item.player, round: round)
-                        }
-                    }
-                }
-            }
-            .padding(.bottom, 8)
-        }
-    }
-
-    // MARK: - Score breakdown (per-player)
-
-    @ViewBuilder
-    private func breakdownRows(for player: Player, round: GameRound) -> some View {
-        let isOwner      = player.id == round.track.ownerID
-        let didFind      = correctVoters.contains { $0.id == player.id }
-        let isSole       = scoreCase == .soleFound && didFind
-        let usedDoubling = round.doublingVoters.contains(player.id)
-        let isSniper     = vm.gameMode == .roles && vm.role(for: player.id) == .sniper
-        let isProv       = vm.gameMode == .roles && vm.role(for: player.id) == .provocateur
-
-        VStack(spacing: 8) {
-            if isOwner {
-                switch scoreCase {
-                case .nobodyFound:
-                    scoreRow("+30 pts", "Bluffeur parfait 🕵️",        color: Color.appAccent)
-                case .everyoneFound:
-                    scoreRow("−10 pts", "Tout le monde a trouvé 😬",   color: Color.scorePenalty)
-                default:
-                    EmptyView()
-                }
-            } else if didFind {
-                scoreRow("+10 pts", "A trouvé le propriétaire 🎯",     color: Color.appAccent)
-                if isSole {
-                    scoreRow("+20 pts", "Seul(e) à avoir trouvé 🔥",   color: Color.scoreBonus)
-                }
-                if isSniper {
-                    scoreRow("+10 pts", "Bonus Sniper — vote doublé 🎯", color: RoleType.sniper.accentColor)
-                }
-                if isProv && usedDoubling {
-                    scoreRow("+10 pts", "Mise doublée — bonne accusation 🃏", color: RoleType.provocateur.accentColor)
-                }
-            } else {
-                // Mauvais vote — uniquement via modificateurs de rôle
-                if isSniper {
-                    scoreRow("−\(ScoringConfig.sniperWrongPenalty) pts",
-                             "Mauvaise accusation · Sniper 🎯",         color: Color.scorePenalty)
-                }
-                if isProv && usedDoubling {
-                    let penalty = ScoringConfig.finderPoints * ScoringConfig.provocateurMultiplier
-                    scoreRow("−\(penalty) pts",
-                             "Mise doublée perdue 🃏",                  color: Color.scorePenalty)
-                }
-            }
-        }
-    }
-
-    private func scoreRow(_ points: String, _ label: String, color: Color) -> some View {
-        HStack(spacing: 12) {
-            Text(points)
-                .font(.subheadline.weight(.black))
-                .foregroundStyle(color)
-                .frame(width: 62, alignment: .leading)
-            Text(label)
-                .font(.subheadline)
-                .foregroundStyle(Color.appWhite)
-            Spacer()
-        }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 10)
-        .background(color.opacity(0.10))
-        .clipShape(RoundedRectangle(cornerRadius: 10))
     }
 }

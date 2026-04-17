@@ -176,15 +176,18 @@ struct LegendeView: View {
     }
 
     private let entries: [LegendEntry] = [
-        LegendEntry(emoji: "☠️", title: "HONTE SUPRÊME",
-                    condition: "Tout le monde a trouvé ta musique... Tu pensais être imprévisible. Tu avais l'originalité d'un générique de supermarché. Chaque suspect du groupe t'a désigné sans hésiter. C'est beau, dans le genre catastrophique.",
-                    color: .red, isEndGame: false),
         LegendEntry(emoji: "🟢", title: "L'INSAISISSABLE",
                     condition: "Personne n'a trouvé ta musique. Aucune trace. Aucun indice. Aucune pitié. Tu as semé tout le monde et tu le sais très bien.",
                     color: .green, isEndGame: false),
         LegendEntry(emoji: "🕯️", title: "LE FIN LIMIER",
                     condition: "Là où tout le monde a raté, lui a trouvé. Seul contre tous. C'est ça, le vrai flair.",
                     color: Color.appOrange, isEndGame: false),
+        LegendEntry(emoji: "👁️", title: "L'OREILLE ABSOLUE",
+                    condition: "Pendant que les autres hésitaient, lui écoutait vraiment. Ça change tout.",
+                    color: Color.appAccent, isEndGame: false),
+        LegendEntry(emoji: "☠️", title: "HONTE SUPRÊME",
+                    condition: "Tout le monde a trouvé ta musique... Tu pensais être imprévisible. Tu avais l'originalité d'un générique de supermarché. Chaque suspect du groupe t'a désigné sans hésiter. C'est beau, dans le genre catastrophique.",
+                    color: .red, isEndGame: false),
         LegendEntry(emoji: "⚫", title: "LE CRIME PARFAIT",
                     condition: "Personne n'a trouvé AUCUNE de tes musiques. Toute la partie. Sans une seule fausse note. L'affaire est classée — sans suite, sans suspect, sans toi. Chef-d'œuvre.",
                     color: Color.appGreyLight, isEndGame: true),
