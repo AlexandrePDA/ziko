@@ -7,31 +7,39 @@ enum RoundTitle {
     case insaisissable  // 🟢 L'INSAISISSABLE
     case finLimier      // 🕯️ LE FIN LIMIER
     case honteSupreme   // ☠️ HONTE SUPRÊME
+    case sniperMiss     // 🎯 L'ANGLE MORT
+    case provocateurLoss // 🃏 LA MISE PERDUE
 
     var emoji: String {
         switch self {
-        case .oreille:       return "👁️"
-        case .insaisissable: return "🟢"
-        case .finLimier:     return "🕯️"
-        case .honteSupreme:  return "☠️"
+        case .oreille:          return "👁️"
+        case .insaisissable:    return "🟢"
+        case .finLimier:        return "🕯️"
+        case .honteSupreme:     return "☠️"
+        case .sniperMiss:       return "🎯"
+        case .provocateurLoss:  return "🃏"
         }
     }
 
     var label: String {
         switch self {
-        case .oreille:       return "L'OREILLE ABSOLUE"
-        case .insaisissable: return "L'INSAISISSABLE"
-        case .finLimier:     return "LE FIN LIMIER"
-        case .honteSupreme:  return "HONTE SUPRÊME"
+        case .oreille:          return "L'OREILLE ABSOLUE"
+        case .insaisissable:    return "L'INSAISISSABLE"
+        case .finLimier:        return "LE FIN LIMIER"
+        case .honteSupreme:     return "HONTE SUPRÊME"
+        case .sniperMiss:       return "L'ANGLE MORT"
+        case .provocateurLoss:  return "LA MISE PERDUE"
         }
     }
 
     var color: Color {
         switch self {
-        case .oreille:       return Color.appAccent
-        case .insaisissable: return Color.scoreBonus
-        case .finLimier:     return Color(hex: "#FF9500")
-        case .honteSupreme:  return Color.scorePenalty
+        case .oreille:          return Color.appAccent
+        case .insaisissable:    return Color.scoreBonus
+        case .finLimier:        return Color(hex: "#FF9500")
+        case .honteSupreme:     return Color.scorePenalty
+        case .sniperMiss:       return Color.scorePenalty
+        case .provocateurLoss:  return Color.scorePenalty
         }
     }
 
@@ -45,6 +53,10 @@ enum RoundTitle {
             return "Là où tout le monde a raté, il a trouvé. Seul contre tous. C'est ça, le vrai flair."
         case .honteSupreme:
             return "Tu pensais être imprévisible. Tu avais l'originalité d'un générique de supermarché. Chaque suspect du groupe t'a désigné sans hésiter. C'est beau, dans le genre catastrophique."
+        case .sniperMiss:
+            return "Tu avais le talent. Tu avais le rôle. Tu as juste visé à côté. C'est ça, l'angle mort."
+        case .provocateurLoss:
+            return "Tu as misé. Tu as perdu. C'est le jeu, mon grand. C'est littéralement le jeu."
         }
     }
 }
@@ -165,7 +177,7 @@ struct RoundResultSection: View {
     var playerRoles: [UUID: RoleType] = [:]
 
     private var results: [RoundResult] {
-        players
+        var mainResults: [RoundResult] = players
             .compactMap { player -> RoundResult? in
                 let isOwner = player.id == round.track.ownerID
                 let didFind = !isOwner && round.votes[player.id] == round.track.ownerID
@@ -245,12 +257,57 @@ struct RoundResultSection: View {
                     pills: finalPills
                 )
             }
-            .sorted { a, b in
-                // HONTE SUPRÊME toujours en premier
-                if a.title == .honteSupreme { return true }
-                if b.title == .honteSupreme { return false }
-                return a.delta > b.delta
+
+        // Second pass : cartes de pénalité de rôle pour les joueurs absents du premier pass
+        // (Sniper raté, Provocateur mise perdue) — uniquement en mode premium (playerRoles non vide)
+        if !playerRoles.isEmpty {
+            let coveredIDs = Set(mainResults.map { $0.player.id })
+            for player in players {
+                guard !coveredIDs.contains(player.id),
+                      player.id != round.track.ownerID,
+                      let role = playerRoles[player.id] else { continue }
+
+                let didFind = round.votes[player.id] == round.track.ownerID
+
+                switch role {
+                case .sniper where !didFind:
+                    let penalty = ScoringConfig.sniperWrongPenalty
+                    mainResults.append(RoundResult(
+                        player: player,
+                        title: .sniperMiss,
+                        delta: -penalty,
+                        pills: [PillData(
+                            points: "−\(penalty) pts",
+                            label: "Mauvaise accusation · Sniper 🎯",
+                            color: Color.scorePenalty
+                        )]
+                    ))
+
+                case .provocateur where !didFind && round.doublingVoters.contains(player.id):
+                    let penalty = ScoringConfig.finderPoints * ScoringConfig.provocateurMultiplier
+                    mainResults.append(RoundResult(
+                        player: player,
+                        title: .provocateurLoss,
+                        delta: -penalty,
+                        pills: [PillData(
+                            points: "−\(penalty) pts",
+                            label: "Mise doublée — perdue 🃏",
+                            color: Color.scorePenalty
+                        )]
+                    ))
+
+                default:
+                    break
+                }
             }
+        }
+
+        return mainResults.sorted { a, b in
+            // HONTE SUPRÊME toujours en premier
+            if a.title == .honteSupreme { return true }
+            if b.title == .honteSupreme { return false }
+            return a.delta > b.delta
+        }
     }
 
     var body: some View {
