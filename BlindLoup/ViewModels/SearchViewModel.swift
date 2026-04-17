@@ -61,7 +61,7 @@ final class SearchViewModel {
             state = .error(error.localizedDescription)
         } catch {
             guard searchText == query else { return }
-            state = .error("Erreur inconnue.")
+            state = .error("Connexion réseau indisponible.")
         }
     }
 

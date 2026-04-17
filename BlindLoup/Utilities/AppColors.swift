@@ -13,6 +13,7 @@ extension Color {
 
     // MARK: - Accent
     static let appAccent     = Color(hex: "#9D9FE5")   // pervenche — CTAs
+    static let appPremiumGold = Color(hex: "#FFE270")  // jaune doux — UI ALIIIBI+
 
     // MARK: - Couleurs scoring (fixes, indépendantes des joueurs)
     static let scorePositive = Color(hex: "#9D9FE5")   // pervenche — points positifs
