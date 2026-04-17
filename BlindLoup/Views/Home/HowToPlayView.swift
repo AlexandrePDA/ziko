@@ -11,9 +11,16 @@ private struct Slide {
     var ctaLabel: String? = nil   // surcharge du bouton si besoin
 }
 
+private let welcomeSlide = Slide(
+    emoji: "👋",
+    title: "Bienvenue",
+    body: "Bienvenue sur Aliiibi !\n\nProuve à tes amis qu'ils ne te connaissent pas autant qu'ils le croient.\n\nCi-dessous, quelques infos pour bien démarrer.",
+    ctaLabel: "Suivant"
+)
+
 private let slides: [Slide] = [
     Slide(
-        emoji: "🕵️",
+        emoji: "🔍",
         title: "Le concept",
         body: "Tes amis pensent te connaître.\nProuve-leur qu'ils ont tort.\n\nAliiibi, c'est le jeu où l'on partage ses musiques, en toute discrétion… et où l'on tente de griller celles des autres."
     ),
@@ -42,18 +49,23 @@ private let slides: [Slide] = [
 struct HowToPlayView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var currentPage = 0
+    var isOnboarding: Bool = false
+
+    private var displayedSlides: [Slide] {
+        isOnboarding ? [welcomeSlide] + slides : slides
+    }
 
     var body: some View {
         ZStack(alignment: .topTrailing) {
             Color.appBlack.ignoresSafeArea()
 
             TabView(selection: $currentPage) {
-                ForEach(slides.indices, id: \.self) { index in
+                ForEach(displayedSlides.indices, id: \.self) { index in
                     SlideView(
-                        slide: slides[index],
-                        isLast: index == slides.count - 1
+                        slide: displayedSlides[index],
+                        isLast: index == displayedSlides.count - 1
                     ) {
-                        if index < slides.count - 1 {
+                        if index < displayedSlides.count - 1 {
                             withAnimation { currentPage = index + 1 }
                         } else {
                             dismiss()

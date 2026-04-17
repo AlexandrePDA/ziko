@@ -8,16 +8,18 @@ struct VotingView: View {
     @State private var voterReady: Bool = false
     @State private var pendingVote: UUID? = nil
 
+    private var orderedPlayers: [Player] { vm.votingPlayers(for: roundIndex) }
+
     private var currentVoter: Player? {
-        vm.players.indices.contains(currentVoterIndex) ? vm.players[currentVoterIndex] : nil
+        orderedPlayers.indices.contains(currentVoterIndex) ? orderedPlayers[currentVoterIndex] : nil
     }
 
     private var nextVoter: Player? {
         let next = currentVoterIndex + 1
-        return vm.players.indices.contains(next) ? vm.players[next] : nil
+        return orderedPlayers.indices.contains(next) ? orderedPlayers[next] : nil
     }
 
-    private var isLastVoter: Bool { currentVoterIndex == vm.players.count - 1 }
+    private var isLastVoter: Bool { currentVoterIndex == orderedPlayers.count - 1 }
 
     private func votablePlayers(for voter: Player) -> [Player] {
         vm.players.filter { $0.id != voter.id }
@@ -114,6 +116,7 @@ struct VotingView: View {
                             )
                         }
                         .buttonStyle(.plain)
+                        .accessibilityLabel("Voter pour \(player.name)\(isSelected ? ", sélectionné" : "")")
                         .animation(.easeInOut(duration: 0.15), value: isSelected)
                     }
 
@@ -229,7 +232,7 @@ struct VotingView: View {
 
     private func advanceVoter() {
         let nextIndex = currentVoterIndex + 1
-        if nextIndex < vm.players.count {
+        if nextIndex < orderedPlayers.count {
             currentVoterIndex = nextIndex
             voterReady = true  // on passe directement au vote, pas de ProtectionScreen
         } else {

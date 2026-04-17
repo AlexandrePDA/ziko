@@ -1,6 +1,15 @@
 import SwiftUI
 import UIKit
 
+// MARK: - Podium group (for tie support)
+
+private struct PodiumGroup: Identifiable {
+    let id = UUID()
+    let rank: Int
+    let players: [Player]
+    let score: Int
+}
+
 struct FinalScoreView: View {
     @Environment(GameViewModel.self) private var vm
     @State private var podiumVisible = false
@@ -8,8 +17,38 @@ struct FinalScoreView: View {
     @State private var showRolesLegend = false
 
     private var ranking: [Player] { vm.finalRanking }
-    private var top3: [Player]  { Array(ranking.prefix(3)) }
-    private var rest: [Player]  { ranking.count > 3 ? Array(ranking.dropFirst(3)) : [] }
+
+    /// Groups consecutive players with equal scores into shared podium slots (max 3 slots).
+    private var podiumGroups: [PodiumGroup] {
+        var groups: [PodiumGroup] = []
+        var rank = 1
+        var i = 0
+        while i < ranking.count && groups.count < 3 {
+            let score = ranking[i].score
+            var tied = [ranking[i]]
+            while i + 1 < ranking.count && ranking[i + 1].score == score {
+                i += 1
+                tied.append(ranking[i])
+            }
+            groups.append(PodiumGroup(rank: rank, players: tied, score: score))
+            rank += tied.count
+            i += 1
+        }
+        return groups
+    }
+
+    private var podiumPlayerCount: Int {
+        podiumGroups.reduce(0) { $0 + $1.players.count }
+    }
+
+    private var rest: [Player] {
+        Array(ranking.dropFirst(podiumPlayerCount))
+    }
+
+    private var restStartRank: Int {
+        (podiumGroups.last.map { $0.rank + $0.players.count }) ?? 1
+    }
+
     private var invincibilityWinners: [Player] { vm.invincibilityWinners }
     private var displayedBonuses: [GameViewModel.RoleBonus] {
         vm.roleBonusResults.filter { $0.role != .sniper && $0.role != .provocateur }
@@ -44,7 +83,7 @@ struct FinalScoreView: View {
                 .padding(.bottom, 20)
 
                 // Podium
-                PodiumView(top3: top3, visible: podiumVisible)
+                PodiumView(groups: podiumGroups, visible: podiumVisible)
                     .padding(.horizontal, 16)
 
                 // 4e et +
@@ -52,7 +91,7 @@ struct FinalScoreView: View {
                     VStack(spacing: 10) {
                         ForEach(Array(rest.enumerated()), id: \.element.id) { idx, player in
                             HStack(spacing: 8) {
-                                Text("\(idx + 4)")
+                                Text("\(restStartRank + idx)")
                                     .font(.caption.weight(.bold))
                                     .foregroundStyle(Color.appGrey)
                                     .frame(width: 22, alignment: .leading)
@@ -202,15 +241,15 @@ private struct BonusRow: View {
 // MARK: - Podium
 
 private struct PodiumView: View {
-    let top3: [Player]
+    let groups: [PodiumGroup]
     let visible: Bool
 
     // ordre : 2e à gauche, 1er au centre, 3e à droite
-    private var displayOrder: [(rank: Int, player: Player)] {
-        var result: [(Int, Player)] = []
-        if top3.count >= 2 { result.append((2, top3[1])) }
-        if top3.count >= 1 { result.append((1, top3[0])) }
-        if top3.count >= 3 { result.append((3, top3[2])) }
+    private var displayOrder: [PodiumGroup] {
+        var result: [PodiumGroup] = []
+        if groups.count >= 2 { result.append(groups[1]) }
+        if groups.count >= 1 { result.append(groups[0]) }
+        if groups.count >= 3 { result.append(groups[2]) }
         return result
     }
 
@@ -248,26 +287,28 @@ private struct PodiumView: View {
 
     var body: some View {
         HStack(alignment: .bottom, spacing: 8) {
-            ForEach(displayOrder, id: \.rank) { item in
-                let isFirst = item.rank == 1
-                let pColor = podiumColor(item.rank)
+            ForEach(displayOrder) { group in
+                let isFirst = group.rank == 1
+                let pColor = podiumColor(group.rank)
 
                 VStack(spacing: 0) {
-                    // Nom + médaille (au-dessus du bloc)
+                    // Noms empilés + médaille (au-dessus du bloc)
                     VStack(spacing: 4) {
-                        Text(item.player.name)
-                            .font(isFirst ? .title3 : .headline)
-                            .fontWeight(.bold)
-                            .foregroundStyle(Color.playerColor(item.player.colorIndex))
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.65)
-                        Text(medal(item.rank))
+                        ForEach(group.players) { player in
+                            Text(player.name)
+                                .font(isFirst ? .title3 : .headline)
+                                .fontWeight(.bold)
+                                .foregroundStyle(Color.playerColor(player.colorIndex))
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.55)
+                        }
+                        Text(medal(group.rank))
                             .font(.system(size: isFirst ? 40 : 30))
                     }
                     .padding(.bottom, 8)
                     .scaleEffect(visible ? 1 : 0.5)
                     .opacity(visible ? 1 : 0)
-                    .animation(.spring(response: 0.5, dampingFraction: 0.65).delay(delay(item.rank)), value: visible)
+                    .animation(.spring(response: 0.5, dampingFraction: 0.65).delay(delay(group.rank)), value: visible)
 
                     // Bloc podium avec score à l'intérieur
                     ZStack {
@@ -276,7 +317,7 @@ private struct PodiumView: View {
                         RoundedRectangle(cornerRadius: 10, style: .continuous)
                             .strokeBorder(pColor.opacity(isFirst ? 0.9 : 0.6), lineWidth: isFirst ? 2 : 1.5)
                         VStack(spacing: 1) {
-                            Text("\(item.player.score)")
+                            Text("\(group.score)")
                                 .font(isFirst ? .title2.weight(.black) : .headline.weight(.black))
                                 .foregroundStyle(pColor)
                             Text("pts")
@@ -284,8 +325,8 @@ private struct PodiumView: View {
                                 .foregroundStyle(pColor.opacity(0.8))
                         }
                     }
-                    .frame(height: visible ? blockHeight(item.rank) : 0)
-                    .animation(.spring(response: 0.55, dampingFraction: 0.7).delay(delay(item.rank) + 0.1), value: visible)
+                    .frame(height: visible ? blockHeight(group.rank) : 0)
+                    .animation(.spring(response: 0.55, dampingFraction: 0.7).delay(delay(group.rank) + 0.1), value: visible)
                 }
                 .frame(maxWidth: .infinity)
             }

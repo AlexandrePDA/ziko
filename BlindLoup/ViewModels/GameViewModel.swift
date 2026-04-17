@@ -17,6 +17,7 @@ final class GameViewModel {
     var phase: GamePhase = .home
     var players: [Player] = []
     var rounds: [GameRound] = []
+    var votingOrders: [[Int]] = []
     var tracksPerPlayer: Int = GameConfig.freeTracksPerPlayer
     var gameMode: GameMode = .classic
 
@@ -506,6 +507,14 @@ final class GameViewModel {
             }
         }
         rounds = allTracks.shuffled().map { GameRound(track: $0) }
+        votingOrders = rounds.map { _ in Array(0..<players.count).shuffled() }
+    }
+
+    func votingPlayers(for roundIndex: Int) -> [Player] {
+        guard votingOrders.indices.contains(roundIndex) else { return players }
+        return votingOrders[roundIndex].compactMap { idx in
+            players.indices.contains(idx) ? players[idx] : nil
+        }
     }
 
     /// Rounds where the player was neither the owner nor guessed by anyone — used as score tiebreaker.
@@ -524,11 +533,11 @@ final class GameViewModel {
 
     func resetGame(keepPlayers: Bool = false) {
         rounds = []
+        votingOrders = []
         playerRoles = [:]
         obsessionnelSuspects = [:]
         provocateurDoublingUsed = []
         provocateurPendingDoubling = nil
-        gameMode = .classic
         if keepPlayers {
             for idx in players.indices {
                 players[idx].score = 0
@@ -536,6 +545,7 @@ final class GameViewModel {
             }
             phase = .setup
         } else {
+            gameMode = .classic
             players = []
             phase = .home
         }

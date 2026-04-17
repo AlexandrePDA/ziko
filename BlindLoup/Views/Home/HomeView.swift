@@ -18,20 +18,23 @@ struct HomeView: View {
                 HStack(spacing: 12) {
                     Spacer()
 
-                    // Badge Premium
-                    Button(action: { showPremiumSheet = true }) {
-                        HStack(spacing: 5) {
-                            Image(systemName: "crown.fill")
-                            Text(store.isPremium ? "Premium" : "Passer Premium")
-                                .font(.caption.weight(.semibold))
+                    // Badge Premium (masqué si déjà abonné)
+                    if !store.isPremium {
+                        Button(action: { showPremiumSheet = true }) {
+                            HStack(spacing: 5) {
+                                Text("👑")
+                                Text("Passer ALIIIBI+")
+                                    .font(.caption.weight(.semibold))
+                            }
+                            .foregroundStyle(Color.appPremiumGold)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 6)
+                            .background(Color.appPremiumGold.opacity(0.22))
+                            .clipShape(Capsule())
+                            .overlay(Capsule().strokeBorder(Color.appPremiumGold.opacity(0.7), lineWidth: 1))
                         }
-                        .foregroundStyle(Color.appAccent)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 6)
-                        .background(Color.appAccent.opacity(0.12))
-                        .clipShape(Capsule())
+                        .accessibilityLabel("Passer à ALIIIBI+")
                     }
-                    .accessibilityLabel(store.isPremium ? "Compte Premium" : "Passer à Premium")
 
                     // Paramètres
                     Button(action: { showSettings = true }) {
@@ -48,18 +51,11 @@ struct HomeView: View {
                 Spacer()
 
                 // ── Logo ─────────────────────────────────────────
-                Text("ALIIIBI")
-                    .font(.system(size: 52, weight: .black))
-                    .foregroundStyle(Color.appAccent)
+                NeonTitleView()
                     .accessibilityLabel("Aliiibi")
 
                 TaglineView()
                     .padding(.top, 10)
-
-                Text("Sélectionne le mode de jeu")
-                    .font(.subheadline)
-                    .foregroundStyle(Color.appGrey)
-                    .padding(.top, 14)
 
                 Spacer()
 
@@ -85,13 +81,47 @@ struct HomeView: View {
         // ── Sheets ───────────────────────────────────────────────
         .sheet(isPresented: $showPremiumSheet) { PremiumPaywallView() }
         .sheet(isPresented: $showSettings)     { SettingsView() }
-        .sheet(isPresented: $showHowToPlay)    { HowToPlayView() }
+        .sheet(isPresented: $showHowToPlay)    { HowToPlayView(isOnboarding: true) }
         .onAppear {
             if !UserDefaults.standard.bool(forKey: StorageKeys.hasSeenTutorial) {
                 showHowToPlay = true
                 UserDefaults.standard.set(true, forKey: StorageKeys.hasSeenTutorial)
             }
         }
+    }
+}
+
+// MARK: - Titre avec effet néon
+
+private struct NeonTitleView: View {
+    private let colors: [Color] = [
+        Color.appAccent,
+        Color(hex: "#7BC47B"),
+        Color(hex: "#FF9CC0"),
+        Color(hex: "#72DDD4"),
+        Color(hex: "#A89EFF"),
+        Color(hex: "#FFAB76"),
+    ]
+    @State private var colorIndex = 0
+    @State private var neonTimer: Timer? = nil
+
+    var body: some View {
+        Text("Aliiibi")
+            .font(.system(size: 52, weight: .black))
+            .foregroundStyle(Color.appWhite)
+            .shadow(color: colors[colorIndex].opacity(0.9), radius: 8,  x: 0, y: 0)
+            .shadow(color: colors[colorIndex].opacity(0.5), radius: 20, x: 0, y: 0)
+            .shadow(color: colors[colorIndex].opacity(0.3), radius: 35, x: 0, y: 0)
+            .animation(.easeInOut(duration: 1.0), value: colorIndex)
+            .onAppear {
+                neonTimer = Timer.scheduledTimer(withTimeInterval: 1.5, repeats: true) { _ in
+                    withAnimation { colorIndex = (colorIndex + 1) % colors.count }
+                }
+            }
+            .onDisappear {
+                neonTimer?.invalidate()
+                neonTimer = nil
+            }
     }
 }
 

@@ -67,17 +67,6 @@ struct BlindTestView: View {
 
             if let round {
                 VStack(spacing: 0) {
-                    // Round indicator
-                    HStack {
-                        Text("Manche \(roundIndex + 1)/\(vm.rounds.count)")
-                            .font(.caption)
-                            .foregroundStyle(Color.appGrey)
-                            .textCase(.uppercase)
-                        Spacer()
-                    }
-                    .padding(.horizontal, 20)
-                    .padding(.top, 20)
-
                     Spacer()
 
                     // Album art
@@ -118,7 +107,7 @@ struct BlindTestView: View {
 
                     // Player
                     if round.track.previewURL != nil {
-                        AudioPlayerView(url: round.track.previewURL)
+                        AudioPlayerView(url: round.track.previewURL, color: vm.themeColor)
                     } else {
                         HStack(spacing: 10) {
                             Image(systemName: "speaker.slash.fill")
@@ -132,7 +121,7 @@ struct BlindTestView: View {
                     }
 
                     // Vote button
-                    PrimaryButton(title: "Voter maintenant", color: vm.themeColor) {
+                    PrimaryButton(title: "Voter maintenant", color: vm.themeColor, textColor: .appBackground) {
                         audioService.pause()
                         vm.advancePhase()
                     }

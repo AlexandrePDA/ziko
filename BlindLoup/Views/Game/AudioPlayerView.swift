@@ -3,6 +3,7 @@ import SwiftUI
 struct AudioPlayerView: View {
     @Environment(AudioPlayerService.self) private var audioService
     let url: URL?
+    var color: Color = Color.appAccent
 
     var body: some View {
         VStack(spacing: 16) {
@@ -10,10 +11,10 @@ struct AudioPlayerView: View {
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
                     RoundedRectangle(cornerRadius: 4)
-                        .fill(Color.appNavy)
+                        .fill(Color.appSurface2)
                         .frame(height: 6)
                     RoundedRectangle(cornerRadius: 4)
-                        .fill(Color.appOrange)
+                        .fill(color)
                         .frame(width: geo.size.width * audioService.progress, height: 6)
                         .animation(.linear(duration: 0.1), value: audioService.progress)
                 }
@@ -38,14 +39,14 @@ struct AudioPlayerView: View {
                 }) {
                     Image(systemName: "gobackward.10")
                         .font(.title2)
-                        .foregroundStyle(Color.appWhite)
+                        .foregroundStyle(color)
                 }
                 .accessibilityLabel("Reculer de 10 secondes")
 
                 Button(action: togglePlayPause) {
                     Image(systemName: audioService.isPlaying ? "pause.circle.fill" : "play.circle.fill")
                         .font(.system(size: 56))
-                        .foregroundStyle(Color.appOrange)
+                        .foregroundStyle(color)
                 }
                 .accessibilityLabel(audioService.isPlaying ? "Pause" : "Lecture")
 
@@ -54,7 +55,7 @@ struct AudioPlayerView: View {
                 }) {
                     Image(systemName: "goforward.10")
                         .font(.title2)
-                        .foregroundStyle(Color.appWhite)
+                        .foregroundStyle(color)
                 }
                 .accessibilityLabel("Avancer de 10 secondes")
             }
@@ -65,7 +66,14 @@ struct AudioPlayerView: View {
     }
 
     private func togglePlayPause() {
-        if audioService.isPlaying { audioService.pause() } else { audioService.resume() }
+        if audioService.isPlaying {
+            audioService.pause()
+        } else if audioService.progress == 0 {
+            // Restarted from beginning (either first play or replay after excerpt ended)
+            startPlayback()
+        } else {
+            audioService.resume()
+        }
     }
 
     private func seekDelta() -> Double {
