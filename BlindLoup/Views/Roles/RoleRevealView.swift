@@ -76,7 +76,7 @@ private struct RoleRevealContent: View {
             Button(action: advance) {
                 Text(role == .obsessionnel && selectedSuspect == nil
                      ? "Choisis ton suspect d'abord"
-                     : "Je suis prêt(e) · Choisir mes musiques")
+                     : "Choisir mes musiques")
                     .font(.headline.weight(.bold))
                     .foregroundStyle(canAdvance ? Color.appBackground : Color.appGrey)
                     .frame(maxWidth: .infinity)

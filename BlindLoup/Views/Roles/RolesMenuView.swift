@@ -172,18 +172,72 @@ struct RolesLegendeView: View {
 
     private let roles: [RoleType] = RoleType.allCases
 
+    private struct EndGameEntry: Identifiable {
+        let id = UUID()
+        let emoji: String
+        let title: String
+        let condition: String
+        let points: Int
+    }
+
+    private let endGameEntries: [EndGameEntry] = [
+        EndGameEntry(emoji: "🔪", title: BadgeTitles.crimePerfait,
+                     condition: "Personne n'a trouvé AUCUNE de tes musiques. Toute la partie. Sans une seule fausse note.",
+                     points: ScoringConfig.invincibilityBonus),
+        EndGameEntry(emoji: "🔍", title: BadgeTitles.inspecteurImplacable,
+                     condition: "Tu as trouvé le plus de musiques. Chaque morceau était un indice. Chaque indice, une condamnation.",
+                     points: ScoringConfig.topDetectiveBonus),
+        EndGameEntry(emoji: "💯", title: BadgeTitles.temoinGenant,
+                     condition: "Tu as trouvé toutes les musiques d'un joueur. Tu sais. Il sait que tu sais.",
+                     points: ScoringConfig.stalkerBonus),
+    ]
+
     var body: some View {
         NavigationStack {
             ZStack {
                 Color.appBlack.ignoresSafeArea()
                 ScrollView {
-                    VStack(alignment: .leading, spacing: 16) {
-                        Text("Chaque joueur reçoit un rôle en secret au début de la partie. Accomplis ta mission pour décrocher un bonus.")
+                    VStack(alignment: .leading, spacing: 24) {
+                        Text("Accomplis ta mission pour décrocher un bonus.")
                             .font(.subheadline)
                             .foregroundStyle(Color.appGreyLight)
                             .lineSpacing(4)
                             .padding(.top, 8)
 
+                        sectionHeader("TITRES DE FIN DE PARTIE")
+                        ForEach(endGameEntries) { entry in
+                            HStack(alignment: .top, spacing: 12) {
+                                Text(entry.emoji)
+                                    .font(.title2)
+                                    .frame(width: 36, alignment: .center)
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(entry.title.uppercased())
+                                        .font(.caption)
+                                        .fontWeight(.black)
+                                        .kerning(1.2)
+                                        .foregroundStyle(Color.appGreyLight)
+                                    Text(entry.condition)
+                                        .font(.caption)
+                                        .foregroundStyle(Color.appGreyLight.opacity(0.7))
+                                        .fixedSize(horizontal: false, vertical: true)
+                                    Text("+\(entry.points) pts")
+                                        .font(.caption2)
+                                        .fontWeight(.semibold)
+                                        .foregroundStyle(Color.scoreBonus)
+                                        .padding(.top, 2)
+                                }
+                                Spacer()
+                            }
+                            .padding(14)
+                            .background(Color.appGreyLight.opacity(0.06))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .strokeBorder(Color.appGreyLight.opacity(0.15), lineWidth: 1)
+                            )
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                        }
+
+                        sectionHeader("RÔLES SECRETS")
                         ForEach(roles, id: \.rawValue) { role in
                             RoleLegendRow(role: role)
                         }
@@ -192,17 +246,26 @@ struct RolesLegendeView: View {
                     .padding(.bottom, 32)
                 }
             }
-            .navigationTitle("Les rôles")
+            .navigationTitle("Les titres et rôles")
             .navigationBarTitleDisplayMode(.inline)
             .toolbarBackground(Color.appBlack, for: .navigationBar)
             .toolbarColorScheme(.dark, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Fermer") { dismiss() }
-                        .foregroundStyle(Color.appAccent)
+                        .foregroundStyle(Color.appPremiumGold)
                 }
             }
         }
+    }
+
+    @ViewBuilder
+    private func sectionHeader(_ title: String) -> some View {
+        Text(title)
+            .font(.caption)
+            .fontWeight(.black)
+            .kerning(1.5)
+            .foregroundStyle(Color.appGrey)
     }
 }
 
@@ -216,7 +279,7 @@ private struct RoleLegendRow: View {
                 .frame(width: 36, alignment: .center)
 
             VStack(alignment: .leading, spacing: 4) {
-                Text(role.title)
+                Text(role.title.uppercased())
                     .font(.caption)
                     .fontWeight(.black)
                     .kerning(1.2)
