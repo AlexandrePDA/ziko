@@ -54,9 +54,23 @@ final class GameViewModel {
     }
 
     var finalRanking: [Player] {
-        players.sorted {
-            if $0.score != $1.score { return $0.score > $1.score }
-            return tiebreakScore(for: $0) > tiebreakScore(for: $1)
+        players.sorted { a, b in
+            if a.score != b.score { return a.score > b.score }
+            // 1. Role mission completed → comes first
+            let aMission = gameMode == .roles && roleMissionSucceeded(for: a) ? 1 : 0
+            let bMission = gameMode == .roles && roleMissionSucceeded(for: b) ? 1 : 0
+            if aMission != bMission { return aMission > bMission }
+            // 2. Fewer honte suprême
+            let aHonte = honteSupremeCount(for: a), bHonte = honteSupremeCount(for: b)
+            if aHonte != bHonte { return aHonte < bHonte }
+            // 3. More insaisissable
+            let aInvis = insaisissableCount(for: a), bInvis = insaisissableCount(for: b)
+            if aInvis != bInvis { return aInvis > bInvis }
+            // 4. More fin limier
+            let aFin = finLimierCount(for: a), bFin = finLimierCount(for: b)
+            if aFin != bFin { return aFin > bFin }
+            // 5. More oreille absolue
+            return oreilleAbsolueCount(for: a) > oreilleAbsolueCount(for: b)
         }
     }
 
@@ -66,6 +80,28 @@ final class GameViewModel {
             guard !ownedRounds.isEmpty else { return false }
             return !ownedRounds.contains { round in
                 round.votes.contains { $0.value == player.id && $0.key != player.id }
+            }
+        }
+    }
+
+    var topDetectiveWinners: [Player] {
+        let counts = players.map { player -> (Player, Int) in
+            let correct = rounds.filter { round in
+                round.votes[player.id] == round.track.ownerID && round.track.ownerID != player.id
+            }.count
+            return (player, correct)
+        }
+        guard let max = counts.map({ $0.1 }).max(), max > 0 else { return [] }
+        return counts.filter { $0.1 == max }.map { $0.0 }
+    }
+
+    var stalkerWinners: [Player] {
+        players.filter { voter in
+            players.contains { owner in
+                guard owner.id != voter.id else { return false }
+                let ownerRounds = rounds.filter { $0.track.ownerID == owner.id }
+                guard !ownerRounds.isEmpty else { return false }
+                return ownerRounds.allSatisfy { $0.votes[voter.id] == owner.id }
             }
         }
     }
@@ -88,7 +124,7 @@ final class GameViewModel {
     func addPlayer(name: String) {
         guard players.count < maxPlayers else { return }
         let trimmed = name.trimmingCharacters(in: .whitespaces)
-        guard !trimmed.isEmpty else { return }
+        guard !trimmed.isEmpty, trimmed.count <= 30 else { return }
         players.append(Player(name: trimmed, colorIndex: players.count))
     }
 
@@ -183,6 +219,7 @@ final class GameViewModel {
                 phase = .blindTest(roundIndex: next)
             } else {
                 applyPerfectBluffBonuses()
+                applyEndGameTitleBonuses()
                 if gameMode == .roles {
                     applyRoleBonuses()
                 }
@@ -476,6 +513,19 @@ final class GameViewModel {
 
     // MARK: - Helpers
 
+    private func applyEndGameTitleBonuses() {
+        for player in topDetectiveWinners {
+            if let idx = players.firstIndex(where: { $0.id == player.id }) {
+                players[idx].score += ScoringConfig.topDetectiveBonus
+            }
+        }
+        for player in stalkerWinners {
+            if let idx = players.firstIndex(where: { $0.id == player.id }) {
+                players[idx].score += ScoringConfig.stalkerBonus
+            }
+        }
+    }
+
     private func applyPerfectBluffBonuses() {
         for player in players {
             let ownedRounds = rounds.filter { $0.track.ownerID == player.id }
@@ -517,11 +567,44 @@ final class GameViewModel {
         }
     }
 
-    /// Rounds where the player was neither the owner nor guessed by anyone — used as score tiebreaker.
-    private func tiebreakScore(for player: Player) -> Int {
+    private func roleMissionSucceeded(for player: Player) -> Bool {
+        guard let role = playerRoles[player.id] else { return false }
+        switch role {
+        case .doublure:     return doublureSucceeded(player)
+        case .obsessionnel: return obsessionnelSucceeded(player)
+        case .profiler:     return profilerSucceeded(player)
+        case .innocent:     return innocentSucceeded(player)
+        default:            return false
+        }
+    }
+
+    private func honteSupremeCount(for player: Player) -> Int {
+        let otherCount = players.filter { $0.id != player.id }.count
+        return rounds.filter { round in
+            guard round.track.ownerID == player.id else { return false }
+            return round.votes.filter { $0.key != player.id && $0.value == player.id }.count == otherCount
+        }.count
+    }
+
+    private func insaisissableCount(for player: Player) -> Int {
         rounds.filter { round in
-            round.track.ownerID != player.id &&
-            !round.votes.values.contains(player.id)
+            guard round.track.ownerID == player.id else { return false }
+            return !round.votes.contains { $0.key != player.id && $0.value == player.id }
+        }.count
+    }
+
+    private func finLimierCount(for player: Player) -> Int {
+        rounds.filter { round in
+            let ownerID = round.track.ownerID
+            guard ownerID != player.id, round.votes[player.id] == ownerID else { return false }
+            return round.votes.filter { $0.key != ownerID && $0.value == ownerID }.count == 1
+        }.count
+    }
+
+    private func oreilleAbsolueCount(for player: Player) -> Int {
+        rounds.filter { round in
+            let ownerID = round.track.ownerID
+            return ownerID != player.id && round.votes[player.id] == ownerID
         }.count
     }
 
