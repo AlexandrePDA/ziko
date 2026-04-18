@@ -127,9 +127,7 @@ struct SettingsView: View {
                                 .frame(width: 72, height: 72)
                                 .clipShape(RoundedRectangle(cornerRadius: 16))
                         }
-                        Text("ALIIIBI")
-                            .font(.system(size: 18, weight: .black))
-                            .foregroundStyle(Color.appAccent)
+                        NeonTitleView(size: 18)
                         Text("Le jeu qui détruit des amitiés. Mais en rythme.")
                             .font(.caption)
                             .foregroundStyle(Color.appGrey)

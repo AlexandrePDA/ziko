@@ -3,7 +3,7 @@ import SwiftUI
 // MARK: - RoundTitle
 
 enum RoundTitle {
-    case oreille        // 👁️ L'OREILLE ABSOLUE
+    case oreille        // 👂 L'OREILLE ABSOLUE
     case insaisissable  // 🟢 L'INSAISISSABLE
     case finLimier      // 🕯️ LE FIN LIMIER
     case honteSupreme   // ☠️ HONTE SUPRÊME
@@ -12,8 +12,8 @@ enum RoundTitle {
 
     var emoji: String {
         switch self {
-        case .oreille:          return "👁️"
-        case .insaisissable:    return "🟢"
+        case .oreille:          return "👂"
+        case .insaisissable:    return "✨"
         case .finLimier:        return "🕯️"
         case .honteSupreme:     return "☠️"
         case .sniperMiss:       return "🎯"
@@ -35,7 +35,7 @@ enum RoundTitle {
     var color: Color {
         switch self {
         case .oreille:          return Color.appAccent
-        case .insaisissable:    return Color.scoreBonus
+        case .insaisissable:    return Color.appAccent
         case .finLimier:        return Color(hex: "#FF9500")
         case .honteSupreme:     return Color.scorePenalty
         case .sniperMiss:       return Color.scorePenalty
@@ -101,10 +101,13 @@ struct PlayerRoundCard: View {
                 Text(result.player.name)
                     .font(.title3.weight(.black))
                     .foregroundStyle(Color.playerColor(result.player.colorIndex))
-                Spacer()
+                    .minimumScaleFactor(0.7)
+                    .lineLimit(1)
+                Spacer(minLength: 8)
                 Text(deltaText)
                     .font(.subheadline.weight(.black))
                     .foregroundStyle(deltaColor)
+                    .fixedSize()
             }
 
             // ── Ligne 2 : emoji + titre + chevron ────────────────
@@ -113,9 +116,11 @@ struct PlayerRoundCard: View {
                     .font(.body)
                 Text(result.title.label)
                     .font(.caption.weight(.heavy))
-                    .kerning(1.5)
+                    .kerning(1.2)
                     .foregroundStyle(titleColor)
-                Spacer()
+                    .minimumScaleFactor(0.75)
+                    .lineLimit(1)
+                Spacer(minLength: 4)
                 Image(systemName: expanded ? "chevron.up" : "chevron.down")
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(Color.appGrey)
@@ -192,8 +197,8 @@ struct RoundResultSection: View {
                         .insaisissable,
                         ScoringConfig.bluffSuccessPoints,
                         PillData(points: "+\(ScoringConfig.bluffSuccessPoints) pts",
-                                 label: "Introuvable 🟢",
-                                 color: Color.scoreBonus)
+                                 label: "Introuvable ✨",
+                                 color: Color.appAccent)
                     )
 
                 case .soleFound:

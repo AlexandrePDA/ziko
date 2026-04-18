@@ -93,7 +93,8 @@ struct HomeView: View {
 
 // MARK: - Titre avec effet néon
 
-private struct NeonTitleView: View {
+struct NeonTitleView: View {
+    var size: CGFloat = 52
     private let colors: [Color] = [
         Color.appAccent,
         Color(hex: "#7BC47B"),
@@ -107,7 +108,7 @@ private struct NeonTitleView: View {
 
     var body: some View {
         Text("Aliiibi")
-            .font(.system(size: 52, weight: .black))
+            .font(.system(size: size, weight: .black))
             .foregroundStyle(Color.appWhite)
             .shadow(color: colors[colorIndex].opacity(0.9), radius: 8,  x: 0, y: 0)
             .shadow(color: colors[colorIndex].opacity(0.5), radius: 20, x: 0, y: 0)

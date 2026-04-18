@@ -86,7 +86,7 @@ struct TrackSearchView: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Annuler") { dismiss() }
-                        .foregroundStyle(Color.appOrange)
+                        .foregroundStyle(vm.themeColor)
                 }
             }
         }

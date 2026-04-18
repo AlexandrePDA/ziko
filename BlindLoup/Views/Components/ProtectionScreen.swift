@@ -23,7 +23,7 @@ struct ProtectionScreen: View {
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 32)
 
-                PrimaryButton(title: "Je suis prêt(e)", color: vm.themeColor, textColor: .appBackground) {
+                PrimaryButton(title: "Prêt", color: vm.themeColor, textColor: .appBackground) {
                     onReady()
                 }
                 .padding(.horizontal, 32)

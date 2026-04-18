@@ -215,6 +215,8 @@ struct VotingView: View {
                         .font(.system(size: 40, weight: .black))
                         .foregroundStyle(Color.playerColor(next.colorIndex))
                         .multilineTextAlignment(.center)
+                        .minimumScaleFactor(0.55)
+                        .lineLimit(2)
                         .padding(.top, 4)
                 }
             }
@@ -222,7 +224,7 @@ struct VotingView: View {
 
             Spacer()
 
-            PrimaryButton(title: isLastVoter ? "Voir la révélation" : "C'est parti \(nextVoter?.name ?? "") !", color: vm.themeColor) {
+            PrimaryButton(title: isLastVoter ? "À qui appartient ce son ?" : "C'est parti \(nextVoter?.name ?? "") !", color: vm.themeColor, textColor: .appBackground) {
                 advanceVoter()
             }
             .padding(.horizontal, 20)

@@ -106,7 +106,7 @@ struct RevealView: View {
                 .padding(.horizontal, 20)
             }
 
-            PrimaryButton(title: isLastRound ? "Voir les scores finaux" : "Manche suivante", color: vm.themeColor) {
+            PrimaryButton(title: isLastRound ? "Voir les scores" : "Manche suivante", color: vm.themeColor, textColor: .appBackground) {
                 vm.advancePhase()
             }
             .padding(.horizontal, 20)
@@ -146,11 +146,13 @@ struct RevealView: View {
                     Text(round.track.title)
                         .font(.headline.weight(.semibold))
                         .foregroundStyle(Color.appWhite)
-                        .lineLimit(2)
+                        .lineLimit(3)
+                        .fixedSize(horizontal: false, vertical: true)
                     Text(round.track.artist)
                         .font(.subheadline)
                         .foregroundStyle(Color.appGreyLight)
-                        .lineLimit(1)
+                        .lineLimit(2)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
                 Spacer()
             }
@@ -169,6 +171,8 @@ struct RevealView: View {
                     .font(.system(size: 46, weight: .black))
                     .foregroundStyle(Color.playerColor(owner.colorIndex))
                     .multilineTextAlignment(.center)
+                    .minimumScaleFactor(0.55)
+                    .lineLimit(2)
             }
         }
     }
