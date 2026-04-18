@@ -1,7 +1,7 @@
 import SwiftUI
 import UIKit
 
-// MARK: - Podium group (for tie support)
+// MARK: - PodiumGroup
 
 private struct PodiumGroup: Identifiable {
     let id = UUID()
@@ -10,199 +10,678 @@ private struct PodiumGroup: Identifiable {
     let score: Int
 }
 
+// MARK: - FinalScoreView
+
 struct FinalScoreView: View {
     @Environment(GameViewModel.self) private var vm
-    @State private var podiumVisible = false
-    @State private var showConfetti = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    @State private var titleVisible = false
+    @State private var thirdVisible = false
+    @State private var secondVisible = false
+    @State private var firstVisible = false
+    @State private var bonusVisible = false
+    @State private var confettiVisible = false
+    @State private var burstID: UUID? = nil
+    @State private var selectedGroup: PodiumGroup? = nil
     @State private var showRolesLegend = false
+
+    // MARK: Computed
 
     private var ranking: [Player] { vm.finalRanking }
 
-    /// Groups consecutive players with equal scores into shared podium slots (max 3 slots).
     private var podiumGroups: [PodiumGroup] {
-        var groups: [PodiumGroup] = []
-        var rank = 1
-        var i = 0
-        while i < ranking.count && groups.count < 3 {
-            let score = ranking[i].score
-            var tied = [ranking[i]]
-            while i + 1 < ranking.count && ranking[i + 1].score == score {
-                i += 1
-                tied.append(ranking[i])
-            }
-            groups.append(PodiumGroup(rank: rank, players: tied, score: score))
-            rank += tied.count
-            i += 1
+        ranking.prefix(3).enumerated().map { idx, player in
+            PodiumGroup(rank: idx + 1, players: [player], score: player.score)
         }
-        return groups
     }
 
-    private var podiumPlayerCount: Int {
-        podiumGroups.reduce(0) { $0 + $1.players.count }
-    }
-
-    private var rest: [Player] {
-        Array(ranking.dropFirst(podiumPlayerCount))
-    }
-
-    private var restStartRank: Int {
-        (podiumGroups.last.map { $0.rank + $0.players.count }) ?? 1
-    }
+    private var rest: [Player] { Array(ranking.dropFirst(3)) }
+    private var restStartRank: Int { podiumGroups.count + 1 }
 
     private var invincibilityWinners: [Player] { vm.invincibilityWinners }
+    private var topDetectiveWinners: [Player] { vm.topDetectiveWinners }
+    private var stalkerWinners: [Player] { vm.stalkerWinners }
     private var displayedBonuses: [GameViewModel.RoleBonus] {
         vm.roleBonusResults.filter { $0.role != .sniper && $0.role != .provocateur }
     }
+    private var hasEndGameBonuses: Bool {
+        !invincibilityWinners.isEmpty || !topDetectiveWinners.isEmpty || !stalkerWinners.isEmpty
+    }
+    private var hasRoleBonuses: Bool { !displayedBonuses.isEmpty }
+    private var hasBonuses: Bool { hasEndGameBonuses || hasRoleBonuses }
+    private var firstPlaceColor: Color {
+        podiumGroups.first?.players.first.map { Color.playerColor($0.colorIndex) }
+            ?? Color(hex: "#EDD88A")
+    }
+
+    // MARK: Body
 
     var body: some View {
         ZStack {
             Color.appBlack.ignoresSafeArea()
 
-            VStack(spacing: 0) {
-                // Titre + bouton rôles
-                ZStack {
-                    Text("Résultats")
-                        .font(.title.weight(.black))
-                        .foregroundStyle(Color.appWhite)
+            if firstVisible {
+                RadialGradient(
+                    gradient: Gradient(colors: [firstPlaceColor.opacity(0.10), Color.clear]),
+                    center: .center,
+                    startRadius: 0,
+                    endRadius: 300
+                )
+                .ignoresSafeArea()
+                .transition(.opacity)
+                .animation(.easeIn(duration: 1.2), value: firstVisible)
+            }
 
-                    if vm.gameMode == .roles {
-                        HStack {
-                            Spacer()
-                            Button { showRolesLegend = true } label: {
-                                Image(systemName: "info.circle")
-                                    .font(.title3)
-                                    .foregroundStyle(Color.appGrey)
-                                    .frame(width: 44, height: 44)
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 0) {
+                    // Header
+                    ZStack {
+                        NeonScoresTitle(visible: titleVisible)
+
+                        if vm.gameMode == .roles {
+                            HStack {
+                                Spacer()
+                                Button { showRolesLegend = true } label: {
+                                    Image(systemName: "info.circle")
+                                        .font(.title3)
+                                        .foregroundStyle(Color.appGrey)
+                                        .frame(width: 44, height: 44)
+                                }
+                                .accessibilityLabel("Les rôles")
+                                .opacity(titleVisible ? 1 : 0)
                             }
-                            .accessibilityLabel("Les rôles")
+                            .padding(.horizontal, 12)
                         }
-                        .padding(.horizontal, 12)
                     }
-                }
-                .padding(.top, 32)
-                .padding(.bottom, 20)
+                    .padding(.top, 44)
+                    .padding(.bottom, 28)
 
-                // Podium
-                PodiumView(groups: podiumGroups, visible: podiumVisible)
+                    // Podium
+                    CeremonyPodium(
+                        groups: podiumGroups,
+                        thirdVisible: thirdVisible,
+                        secondVisible: secondVisible,
+                        firstVisible: firstVisible,
+                        onTap: { group in selectedGroup = group },
+                        onLongPressFirst: {
+                            burstID = UUID()
+                            UINotificationFeedbackGenerator().notificationOccurred(.success)
+                        }
+                    )
                     .padding(.horizontal, 16)
 
-                // 4e et +
-                if !rest.isEmpty {
-                    VStack(spacing: 10) {
-                        ForEach(Array(rest.enumerated()), id: \.element.id) { idx, player in
-                            HStack(spacing: 8) {
-                                Text("\(restStartRank + idx)")
-                                    .font(.caption.weight(.bold))
-                                    .foregroundStyle(Color.appGrey)
-                                    .frame(width: 22, alignment: .leading)
-
-                                Spacer()
-
-                                HStack(spacing: 6) {
-                                    Circle()
-                                        .fill(Color.playerColor(player.colorIndex))
-                                        .frame(width: 8, height: 8)
+                    // 4th place and below
+                    if !rest.isEmpty {
+                        VStack(spacing: 6) {
+                            ForEach(Array(rest.enumerated()), id: \.element.id) { idx, player in
+                                let rank = restStartRank + idx
+                                HStack(spacing: 8) {
+                                    Text("\(rank)")
+                                        .font(.caption.weight(.bold))
+                                        .foregroundStyle(Color.appGrey)
+                                        .frame(width: 22, alignment: .leading)
                                     Text(player.name)
                                         .font(.subheadline.weight(.semibold))
                                         .foregroundStyle(Color.playerColor(player.colorIndex))
                                         .lineLimit(1)
                                         .minimumScaleFactor(0.7)
+                                    Spacer()
+                                    Text("\(player.score) pts")
+                                        .font(.caption.weight(.semibold))
+                                        .foregroundStyle(Color.appGrey)
+                                    Text("détails")
+                                        .font(.caption2)
+                                        .foregroundStyle(Color.appGrey.opacity(0.5))
                                 }
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 8)
+                                .background(Color.appSurface.opacity(0.6))
+                                .clipShape(RoundedRectangle(cornerRadius: 10))
+                                .padding(.horizontal, 20)
 
-                                Spacer()
-
-                                Text("\(player.score) pts")
-                                    .font(.caption.weight(.semibold))
-                                    .foregroundStyle(Color.appGrey)
-                                    .frame(minWidth: 55, alignment: .trailing)
+                                .accessibilityAddTraits(.isButton)
+                                .accessibilityLabel("\(player.name), \(player.score) points, classé \(rank). Appuyer pour détails.")
+                                .onTapGesture {
+                                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                                    selectedGroup = PodiumGroup(rank: rank, players: [player], score: player.score)
+                                }
                             }
-                            .padding(.horizontal, 24)
                         }
+                        .padding(.top, 20)
+                        .opacity(firstVisible ? 1 : 0)
+                        .offset(y: firstVisible ? 0 : 16)
+                        .animation(.easeOut(duration: 0.4).delay(0.2), value: firstVisible)
                     }
-                    .padding(.top, 16)
-                    .opacity(podiumVisible ? 1 : 0)
-                    .offset(y: podiumVisible ? 0 : 20)
-                    .animation(.easeOut(duration: 0.4).delay(0.6), value: podiumVisible)
-                }
 
-                // Bonus invincibilité + bonus de rôles
-                if !invincibilityWinners.isEmpty || !displayedBonuses.isEmpty {
-                    VStack(spacing: 8) {
-                        SectionDividerLabel(title: "BONUS PARTIE", color: Color.scoreBonus)
-                            .padding(.horizontal, 20)
+                    // Titres de fin de partie
+                    if hasEndGameBonuses {
+                        EndGameBonusSection(
+                            invincibilityWinners: invincibilityWinners,
+                            topDetectiveWinners: topDetectiveWinners,
+                            stalkerWinners: stalkerWinners,
+                            visible: bonusVisible
+                        )
+                        .padding(.top, 28)
+                    }
 
-                        // Crime Parfait (tous modes)
-                        ForEach(invincibilityWinners) { player in
-                            BonusRow(
-                                colorIndex: player.colorIndex,
-                                name: player.name,
-                                label: "+\(ScoringConfig.invincibilityBonus) pts — aucune musique trouvée ✨",
-                                labelColor: Color.scoreBonus,
-                                bgColor: Color.scoreBonus
-                            )
+                    // Rôles (circonstances aggravantes)
+                    if hasRoleBonuses {
+                        CirconstancesSection(displayedBonuses: displayedBonuses, visible: bonusVisible)
+                            .padding(.top, hasEndGameBonuses ? 16 : 28)
+                    }
+
+                    // CTA
+                    VStack(spacing: 12) {
+                        PrimaryButton(title: "Rejouer", color: vm.themeColor, textColor: .appBackground) {
+                            vm.resetGame(keepPlayers: true)
                         }
-
-                        // Bonus de rôles (mode Rôles uniquement)
-                        ForEach(Array(displayedBonuses.enumerated()), id: \.offset) { _, bonus in
-                            BonusRow(
-                                colorIndex: bonus.player.colorIndex,
-                                name: bonus.player.name,
-                                label: roleBonusText(bonus),
-                                labelColor: bonus.succeeded ? bonus.role.accentColor : Color.appGrey,
-                                bgColor: bonus.succeeded ? bonus.role.accentColor : Color.appSurface
-                            )
+                        Button("Accueil") {
+                            vm.resetGame(keepPlayers: false)
                         }
+                        .font(.subheadline)
+                        .foregroundStyle(Color.appGrey)
                     }
-                    .padding(.top, 16)
-                    .opacity(podiumVisible ? 1 : 0)
-                    .animation(.easeOut(duration: 0.4).delay(0.8), value: podiumVisible)
+                    .padding(.horizontal, 20)
+                    .padding(.top, 28)
+                    .padding(.bottom, 44)
+                    .opacity(bonusVisible ? 1 : 0)
+                    .animation(.easeOut(duration: 0.4).delay(0.1), value: bonusVisible)
                 }
-
-                Spacer()
-
-                // Actions
-                VStack(spacing: 12) {
-                    PrimaryButton(title: "Rejouer (mêmes joueurs)", color: vm.themeColor) {
-                        vm.resetGame(keepPlayers: true)
-                    }
-                    Button("Retour à l'accueil") {
-                        vm.resetGame(keepPlayers: false)
-                    }
-                    .font(.subheadline)
-                    .foregroundStyle(Color.appGrey)
-                }
-                .padding(.horizontal, 20)
-                .padding(.bottom, 32)
             }
 
             // Confetti
-            if showConfetti {
-                ConfettiView()
+            if confettiVisible {
+                ConfettiView(winnerColor: firstPlaceColor)
+                    .ignoresSafeArea()
+                    .allowsHitTesting(false)
+            }
+            if let bid = burstID {
+                ConfettiView(winnerColor: firstPlaceColor)
+                    .id(bid)
                     .ignoresSafeArea()
                     .allowsHitTesting(false)
             }
         }
+        .sheet(item: $selectedGroup) { group in
+            PlayerDetailSheet(
+                group: group,
+                rounds: vm.rounds,
+                allPlayers: vm.players,
+                roleBonuses: vm.roleBonusResults,
+                ranking: vm.finalRanking
+            )
+            .presentationDetents([.medium, .large])
+            .presentationBackground(Color.appBlack)
+        }
         .sheet(isPresented: $showRolesLegend) { RolesLegendeView() }
-        .onAppear {
-            withAnimation(.spring(response: 0.6, dampingFraction: 0.75).delay(0.15)) {
-                podiumVisible = true
+        .onAppear { runCeremony() }
+    }
+
+    // MARK: Ceremony
+
+    private func runCeremony() {
+        if reduceMotion {
+            titleVisible = true; thirdVisible = true; secondVisible = true
+            firstVisible = true; bonusVisible = true; confettiVisible = true
+            return
+        }
+        withAnimation(.easeOut(duration: 0.6)) { titleVisible = true }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+            withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) { thirdVisible = true }
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.4) {
+            withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) { secondVisible = true }
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.4) {
+            withAnimation(.spring(response: 0.55, dampingFraction: 0.65)) { firstVisible = true }
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.8) {
+            confettiVisible = true
+            UINotificationFeedbackGenerator().notificationOccurred(.success)
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3.2) {
+            withAnimation(.easeOut(duration: 0.5)) { bonusVisible = true }
+        }
+    }
+}
+
+// MARK: - NeonScoresTitle
+
+private struct NeonScoresTitle: View {
+    let visible: Bool
+    @State private var kerning: CGFloat = 8
+
+    var body: some View {
+        Text("SCORES")
+            .font(.system(size: 32, weight: .black))
+            .kerning(kerning)
+            .foregroundStyle(Color.appWhite)
+            .shadow(color: Color.appAccent.opacity(0.55), radius: 8)
+            .shadow(color: Color.appAccent.opacity(0.25), radius: 22)
+            .opacity(visible ? 1 : 0)
+            .onChange(of: visible) { _, newVal in
+                guard newVal else { return }
+                withAnimation(.easeOut(duration: 0.9)) { kerning = 2 }
             }
-            showConfetti = true
+    }
+}
+
+// MARK: - CeremonyPodium
+
+private struct CeremonyPodium: View {
+    let groups: [PodiumGroup]
+    let thirdVisible: Bool
+    let secondVisible: Bool
+    let firstVisible: Bool
+    let onTap: (PodiumGroup) -> Void
+    let onLongPressFirst: () -> Void
+
+    private struct DisplayItem: Identifiable {
+        let id: UUID
+        let group: PodiumGroup
+        let visible: Bool
+    }
+
+    private var displayItems: [DisplayItem] {
+        var result: [DisplayItem] = []
+        if groups.count >= 2 { result.append(DisplayItem(id: groups[1].id, group: groups[1], visible: secondVisible)) }
+        if groups.count >= 1 { result.append(DisplayItem(id: groups[0].id, group: groups[0], visible: firstVisible)) }
+        if groups.count >= 3 { result.append(DisplayItem(id: groups[2].id, group: groups[2], visible: thirdVisible)) }
+        return result
+    }
+
+    var body: some View {
+        HStack(alignment: .bottom, spacing: 10) {
+            ForEach(displayItems) { item in
+                PodiumCard(
+                    group: item.group,
+                    visible: item.visible,
+                    onTap: { onTap(item.group) },
+                    onLongPress: item.group.rank == 1 ? onLongPressFirst : nil
+                )
+            }
+        }
+    }
+}
+
+// MARK: - PodiumCard
+
+private struct PodiumCard: View {
+    let group: PodiumGroup
+    let visible: Bool
+    let onTap: () -> Void
+    let onLongPress: (() -> Void)?
+
+    @State private var pulseOpacity: Double = 0.3
+    @State private var trophyOffset: CGFloat = 0
+    @State private var pressScale: CGFloat = 1.0
+
+    private var isFirst: Bool { group.rank == 1 }
+
+    private var cardColor: Color {
+        switch group.rank {
+        case 1:  return Color(hex: "#EDD88A")
+        case 2:  return Color(hex: "#C4C8D4")
+        default: return Color(hex: "#D4A870")
         }
     }
 
-    private func roleBonusText(_ bonus: GameViewModel.RoleBonus) -> String {
-        let emoji = bonus.role.emoji
-        let name = bonus.role.title
-        if bonus.succeeded {
-            if bonus.points > 0 {
-                return "\(emoji) \(name) · +\(bonus.points) pts — \(bonus.label)"
-            } else {
-                return "\(emoji) \(name) · \(bonus.label)"
-            }
-        } else {
-            return "\(emoji) \(name) · Mission échouée"
+    private var medal: String {
+        switch group.rank {
+        case 1:  return "🏆"
+        case 2:  return "🥈"
+        default: return "🥉"
         }
+    }
+
+    var body: some View {
+        VStack(spacing: 0) {
+            // Names above card
+            VStack(spacing: 3) {
+                ForEach(group.players) { player in
+                    Text(player.name)
+                        .font(isFirst ? .title3.weight(.black) : .subheadline.weight(.bold))
+                        .foregroundStyle(Color.playerColor(player.colorIndex))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.5)
+                }
+                Text(medal)
+                    .font(.system(size: isFirst ? 42 : 26))
+                    .offset(y: trophyOffset)
+            }
+            .padding(.bottom, isFirst ? 10 : 6)
+
+            // Score card
+            ZStack {
+                RoundedRectangle(cornerRadius: 14)
+                    .fill(cardColor.opacity(isFirst ? 0.16 : 0.10))
+
+                if isFirst {
+                    RoundedRectangle(cornerRadius: 14)
+                        .strokeBorder(cardColor.opacity(pulseOpacity), lineWidth: 2)
+                } else {
+                    RoundedRectangle(cornerRadius: 14)
+                        .strokeBorder(cardColor.opacity(0.45), lineWidth: 1.5)
+                }
+
+                VStack(spacing: 2) {
+                    Text("\(group.score)")
+                        .font(isFirst ? .title.weight(.black) : .title3.weight(.black))
+                        .foregroundStyle(cardColor)
+                    Text("pts")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(cardColor.opacity(0.7))
+                    Text("détails")
+                        .font(.caption2)
+                        .foregroundStyle(Color.appGrey.opacity(0.45))
+                        .padding(.top, 4)
+                        .opacity(visible ? 1 : 0)
+                }
+            }
+            .frame(height: isFirst ? 150 : 100)
+            .shadow(color: isFirst ? cardColor.opacity(0.22) : .clear, radius: 18, y: 4)
+        }
+        .scaleEffect(pressScale)
+        .scaleEffect(visible ? 1 : (isFirst ? 0.6 : 0.5))
+        .opacity(visible ? 1 : 0)
+        .offset(y: visible ? 0 : 40)
+        .frame(maxWidth: .infinity)
+        .accessibilityAddTraits(.isButton)
+        .accessibilityLabel("\(group.players.map(\.name).joined(separator: ", ")), \(group.score) points, \(group.rank == 1 ? "1er" : "\(group.rank)ème"). Appuyer pour détails.")
+        .onTapGesture {
+            withAnimation(.spring(response: 0.25, dampingFraction: 0.55)) { pressScale = 0.93 }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.12) {
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) { pressScale = 1.0 }
+            }
+            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+            onTap()
+        }
+        .onLongPressGesture(minimumDuration: 0.5) {
+            onLongPress?()
+        }
+        .onAppear {
+            guard visible else { return }
+            startAnimations()
+        }
+        .onChange(of: visible) { _, newVal in
+            guard newVal else { return }
+            startAnimations()
+        }
+    }
+
+    private var bobOffset: CGFloat {
+        switch group.rank {
+        case 1:  return -6
+        case 2:  return -4
+        default: return -3
+        }
+    }
+
+    private var bobDuration: Double {
+        switch group.rank {
+        case 1:  return 1.4
+        case 2:  return 1.7
+        default: return 2.0
+        }
+    }
+
+    private func startAnimations() {
+        let delay = isFirst ? 0.4 : 0.2
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+            if isFirst {
+                withAnimation(.easeInOut(duration: 1.5).repeatForever(autoreverses: true)) {
+                    pulseOpacity = 1.0
+                }
+            }
+            withAnimation(.easeInOut(duration: bobDuration).repeatForever(autoreverses: true)) {
+                trophyOffset = bobOffset
+            }
+        }
+    }
+}
+
+// MARK: - PlayerDetailSheet
+
+private struct PlayerDetailSheet: View {
+    let group: PodiumGroup
+    let rounds: [GameRound]
+    let allPlayers: [Player]
+    let roleBonuses: [GameViewModel.RoleBonus]
+    let ranking: [Player]
+
+    private func tiebreakerNote(for playerID: UUID) -> String? {
+        guard let idx = ranking.firstIndex(where: { $0.id == playerID }) else { return nil }
+        let score = ranking[idx].score
+        var neighbors: [String] = []
+        if idx > 0 && ranking[idx - 1].score == score { neighbors.append(ranking[idx - 1].name) }
+        if idx + 1 < ranking.count && ranking[idx + 1].score == score { neighbors.append(ranking[idx + 1].name) }
+        guard !neighbors.isEmpty else { return nil }
+        return "Même score que \(neighbors.joined(separator: " & ")). Classé par départage : honte suprême · insaisissable · fin limier · oreille absolue."
+    }
+
+    private func badgeCounts(for playerID: UUID) -> (oreille: Int, finLimier: Int, insaisissable: Int, honteSupreme: Int) {
+        var oreille = 0, finLimier = 0, insaisissable = 0, honteSupreme = 0
+        let otherCount = allPlayers.filter { $0.id != playerID }.count
+
+        for round in rounds {
+            let ownerID = round.track.ownerID
+            let correctVoters = round.votes.filter { $0.key != ownerID && $0.value == ownerID }
+
+            if ownerID != playerID, round.votes[playerID] == ownerID {
+                oreille += 1
+                if correctVoters.count == 1 { finLimier += 1 }
+            }
+            if ownerID == playerID {
+                if correctVoters.isEmpty { insaisissable += 1 }
+                if correctVoters.count == otherCount { honteSupreme += 1 }
+            }
+        }
+        return (oreille, finLimier, insaisissable, honteSupreme)
+    }
+
+    var body: some View {
+        VStack(spacing: 0) {
+            RoundedRectangle(cornerRadius: 3)
+                .fill(Color.appGrey.opacity(0.4))
+                .frame(width: 36, height: 4)
+                .padding(.top, 16)
+                .padding(.bottom, 20)
+
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 16) {
+                    ForEach(group.players) { player in
+                        let b = badgeCounts(for: player.id)
+                        let roleBonus = roleBonuses.first { $0.player.id == player.id }
+                        VStack(alignment: .leading, spacing: 12) {
+                            HStack(spacing: 8) {
+                                Circle()
+                                    .fill(Color.playerColor(player.colorIndex))
+                                    .frame(width: 12, height: 12)
+                                Text(player.name)
+                                    .font(.title3.weight(.black))
+                                    .foregroundStyle(Color.playerColor(player.colorIndex))
+                                Spacer()
+                                Text("\(group.score) pts · #\(group.rank)")
+                                    .font(.caption.weight(.semibold))
+                                    .foregroundStyle(Color.appGrey)
+                            }
+
+                            LazyVGrid(
+                                columns: [GridItem(.flexible()), GridItem(.flexible())],
+                                spacing: 8
+                            ) {
+                                BadgeDetailCell(emoji: "👂", title: "OREILLE ABSOLUE",
+                                                count: b.oreille, color: Color.appAccent)
+                                BadgeDetailCell(emoji: "🕯️", title: "FIN LIMIER",
+                                                count: b.finLimier, color: Color(hex: "#F4C542"))
+                                BadgeDetailCell(emoji: "✨", title: "INSAISISSABLE",
+                                                count: b.insaisissable, color: Color.appAccent)
+                                BadgeDetailCell(emoji: "☠️", title: "HONTE SUPRÊME",
+                                                count: b.honteSupreme, color: Color.appGrey)
+                            }
+
+                            if let bonus = roleBonus {
+                                RoleBonusDetailRow(bonus: bonus)
+                            }
+
+                            if let note = tiebreakerNote(for: player.id) {
+                                HStack(alignment: .top, spacing: 6) {
+                                    Image(systemName: "info.circle")
+                                        .font(.caption)
+                                        .foregroundStyle(Color.appGrey)
+                                    Text(note)
+                                        .font(.caption)
+                                        .foregroundStyle(Color.appGrey)
+                                        .fixedSize(horizontal: false, vertical: true)
+                                }
+                                .padding(10)
+                                .background(Color.appGrey.opacity(0.06))
+                                .clipShape(RoundedRectangle(cornerRadius: 8))
+                            }
+                        }
+                        .padding(16)
+                        .background(Color.appSurface)
+                        .clipShape(RoundedRectangle(cornerRadius: 14))
+                    }
+                }
+                .padding(.horizontal, 20)
+                .padding(.bottom, 40)
+            }
+        }
+    }
+}
+
+private struct RoleBonusDetailRow: View {
+    let bonus: GameViewModel.RoleBonus
+
+    var body: some View {
+        HStack(spacing: 10) {
+            Text(bonus.role.emoji)
+                .font(.title3)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(bonus.role.title.uppercased())
+                    .font(.caption2.weight(.black))
+                    .kerning(0.8)
+                    .foregroundStyle(bonus.role.accentColor)
+                Text(bonus.succeeded ? bonus.label : "Mission échouée")
+                    .font(.caption)
+                    .foregroundStyle(bonus.succeeded ? Color.appGreyLight : Color.appGrey)
+            }
+            Spacer()
+            if bonus.succeeded && bonus.points > 0 {
+                Text("+\(bonus.points) pts")
+                    .font(.caption.weight(.black))
+                    .foregroundStyle(Color.scoreBonus)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(Color.scoreBonus.opacity(0.12))
+                    .clipShape(Capsule())
+            } else if !bonus.succeeded {
+                Text("❌")
+                    .font(.subheadline)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(10)
+        .background(bonus.role.accentColor.opacity(bonus.succeeded ? 0.1 : 0.04))
+        .clipShape(RoundedRectangle(cornerRadius: 10))
+    }
+}
+
+private struct BadgeDetailCell: View {
+    let emoji: String
+    let title: String
+    let count: Int
+    let color: Color
+
+    var body: some View {
+        HStack(spacing: 10) {
+            Text(emoji)
+                .font(.title3)
+            VStack(alignment: .leading, spacing: 1) {
+                Text(title)
+                    .font(.caption2.weight(.black))
+                    .kerning(0.8)
+                    .foregroundStyle(color)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.65)
+                Text(count > 0 ? "\(count)×" : "—")
+                    .font(.subheadline.weight(.black))
+                    .foregroundStyle(count > 0 ? Color.appWhite : Color.appGrey)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(10)
+        .background(color.opacity(count > 0 ? 0.12 : 0.04))
+        .clipShape(RoundedRectangle(cornerRadius: 10))
+    }
+}
+
+// MARK: - EndGameBonusSection
+
+private struct EndGameBonusSection: View {
+    let invincibilityWinners: [Player]
+    let topDetectiveWinners: [Player]
+    let stalkerWinners: [Player]
+    let visible: Bool
+
+    var body: some View {
+        VStack(spacing: 8) {
+            SectionDividerLabel(title: "TITRES DE FIN DE PARTIE", color: Color.appPremiumGold)
+                .padding(.horizontal, 20)
+
+            ForEach(invincibilityWinners) { player in
+                BonusRow(colorIndex: player.colorIndex, name: player.name,
+                         label: "🔪 \(BadgeTitles.crimePerfait.uppercased())",
+                         labelColor: Color.appGreyLight,
+                         points: ScoringConfig.invincibilityBonus, failed: false)
+            }
+            ForEach(topDetectiveWinners) { player in
+                BonusRow(colorIndex: player.colorIndex, name: player.name,
+                         label: "🔍 \(BadgeTitles.inspecteurImplacable.uppercased())",
+                         labelColor: Color.appGreyLight,
+                         points: ScoringConfig.topDetectiveBonus, failed: false)
+            }
+            ForEach(stalkerWinners) { player in
+                BonusRow(colorIndex: player.colorIndex, name: player.name,
+                         label: "💯 \(BadgeTitles.temoinGenant.uppercased())",
+                         labelColor: Color.appGreyLight,
+                         points: ScoringConfig.stalkerBonus, failed: false)
+            }
+        }
+        .opacity(visible ? 1 : 0)
+        .offset(y: visible ? 0 : 20)
+    }
+}
+
+// MARK: - CirconstancesSection (rôles secrets)
+
+private struct CirconstancesSection: View {
+    let displayedBonuses: [GameViewModel.RoleBonus]
+    let visible: Bool
+
+    var body: some View {
+        VStack(spacing: 8) {
+            SectionDividerLabel(title: "RÔLES SECRETS", color: Color.appPremiumGold)
+                .padding(.horizontal, 20)
+
+            ForEach(Array(displayedBonuses.enumerated()), id: \.offset) { _, bonus in
+                BonusRow(
+                    colorIndex: bonus.player.colorIndex,
+                    name: bonus.player.name,
+                    label: "\(bonus.role.emoji) \(bonus.role.title.uppercased())",
+                    labelColor: bonus.succeeded ? bonus.role.accentColor : Color.appGrey,
+                    points: bonus.succeeded && bonus.points > 0 ? bonus.points : nil,
+                    failed: !bonus.succeeded
+                )
+            }
+        }
+        .opacity(visible ? 1 : 0)
+        .offset(y: visible ? 0 : 20)
     }
 }
 
@@ -213,142 +692,72 @@ private struct BonusRow: View {
     let name: String
     let label: String
     let labelColor: Color
-    let bgColor: Color
+    var points: Int? = nil
+    var failed: Bool = false
 
     var body: some View {
         HStack(spacing: 12) {
-            Circle()
-                .fill(Color.playerColor(colorIndex))
-                .frame(width: 10, height: 10)
-            Text(name)
-                .font(.subheadline)
-                .foregroundStyle(Color.appWhite)
-            Spacer()
-            Text(label)
-                .font(.caption)
-                .fontWeight(.semibold)
-                .foregroundStyle(labelColor)
-                .multilineTextAlignment(.trailing)
+            VStack(alignment: .leading, spacing: 4) {
+                Text(name)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(Color.playerColor(colorIndex))
+                    .minimumScaleFactor(0.8)
+                    .lineLimit(1)
+                Text(label)
+                    .font(.caption)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(labelColor)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            Spacer(minLength: 8)
+            if failed {
+                Text("❌")
+                    .font(.subheadline)
+            } else if let pts = points, pts > 0 {
+                Text("+\(pts) pts")
+                    .font(.caption.weight(.black))
+                    .foregroundStyle(Color.scoreBonus)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(Color.scoreBonus.opacity(0.15))
+                    .clipShape(Capsule())
+            }
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, 16)
         .padding(.vertical, 10)
-        .background(bgColor.opacity(0.12))
+        .background(Color.appGreyLight.opacity(0.08))
         .clipShape(RoundedRectangle(cornerRadius: 10))
         .padding(.horizontal, 20)
     }
 }
 
-// MARK: - Podium
-
-private struct PodiumView: View {
-    let groups: [PodiumGroup]
-    let visible: Bool
-
-    // ordre : 2e à gauche, 1er au centre, 3e à droite
-    private var displayOrder: [PodiumGroup] {
-        var result: [PodiumGroup] = []
-        if groups.count >= 2 { result.append(groups[1]) }
-        if groups.count >= 1 { result.append(groups[0]) }
-        if groups.count >= 3 { result.append(groups[2]) }
-        return result
-    }
-
-    private func blockHeight(_ rank: Int) -> CGFloat {
-        switch rank {
-        case 1: return 120
-        case 2: return 95
-        default: return 75
-        }
-    }
-
-    private func medal(_ rank: Int) -> String {
-        switch rank {
-        case 1: return "🥇"
-        case 2: return "🥈"
-        default: return "🥉"
-        }
-    }
-
-    private func podiumColor(_ rank: Int) -> Color {
-        switch rank {
-        case 1: return Color(hex: "#EDD88A")
-        case 2: return Color(hex: "#C4C8D4")
-        default: return Color(hex: "#D4A870")
-        }
-    }
-
-    private func delay(_ rank: Int) -> Double {
-        switch rank {
-        case 1: return 0.1
-        case 2: return 0.25
-        default: return 0.4
-        }
-    }
-
-    var body: some View {
-        HStack(alignment: .bottom, spacing: 8) {
-            ForEach(displayOrder) { group in
-                let isFirst = group.rank == 1
-                let pColor = podiumColor(group.rank)
-
-                VStack(spacing: 0) {
-                    // Noms empilés + médaille (au-dessus du bloc)
-                    VStack(spacing: 4) {
-                        ForEach(group.players) { player in
-                            Text(player.name)
-                                .font(isFirst ? .title3 : .headline)
-                                .fontWeight(.bold)
-                                .foregroundStyle(Color.playerColor(player.colorIndex))
-                                .lineLimit(1)
-                                .minimumScaleFactor(0.55)
-                        }
-                        Text(medal(group.rank))
-                            .font(.system(size: isFirst ? 40 : 30))
-                    }
-                    .padding(.bottom, 8)
-                    .scaleEffect(visible ? 1 : 0.5)
-                    .opacity(visible ? 1 : 0)
-                    .animation(.spring(response: 0.5, dampingFraction: 0.65).delay(delay(group.rank)), value: visible)
-
-                    // Bloc podium avec score à l'intérieur
-                    ZStack {
-                        RoundedRectangle(cornerRadius: 10, style: .continuous)
-                            .fill(pColor.opacity(0.22))
-                        RoundedRectangle(cornerRadius: 10, style: .continuous)
-                            .strokeBorder(pColor.opacity(isFirst ? 0.9 : 0.6), lineWidth: isFirst ? 2 : 1.5)
-                        VStack(spacing: 1) {
-                            Text("\(group.score)")
-                                .font(isFirst ? .title2.weight(.black) : .headline.weight(.black))
-                                .foregroundStyle(pColor)
-                            Text("pts")
-                                .font(.caption.weight(.semibold))
-                                .foregroundStyle(pColor.opacity(0.8))
-                        }
-                    }
-                    .frame(height: visible ? blockHeight(group.rank) : 0)
-                    .animation(.spring(response: 0.55, dampingFraction: 0.7).delay(delay(group.rank) + 0.1), value: visible)
-                }
-                .frame(maxWidth: .infinity)
-            }
-        }
-    }
-}
-
-// MARK: - Confetti
+// MARK: - ConfettiView
 
 private struct ConfettiView: UIViewRepresentable {
-    func makeUIView(context: Context) -> ConfettiContainerView {
-        let view = ConfettiContainerView()
+    var winnerColor: Color = .white
+
+    func makeUIView(context: Context) -> ConfettiEmitterView {
+        let view = ConfettiEmitterView(winnerColor: UIColor(winnerColor))
         view.isUserInteractionEnabled = false
         view.backgroundColor = .clear
         return view
     }
-    func updateUIView(_ uiView: ConfettiContainerView, context: Context) {}
+
+    func updateUIView(_ uiView: ConfettiEmitterView, context: Context) {}
 }
 
-private class ConfettiContainerView: UIView {
+final class ConfettiEmitterView: UIView {
     private var emitterSetUp = false
     private let emitter = CAEmitterLayer()
+    private let winnerColor: UIColor
+
+    init(winnerColor: UIColor) {
+        self.winnerColor = winnerColor
+        super.init(frame: .zero)
+    }
+
+    required init?(coder: NSCoder) { fatalError() }
 
     override func layoutSubviews() {
         super.layoutSubviews()
@@ -362,7 +771,7 @@ private class ConfettiContainerView: UIView {
         cell.birthRate = 7
         cell.lifetime = 5.5
         cell.lifetimeRange = 1.5
-        cell.velocity = 320
+        cell.velocity = 330
         cell.velocityRange = 130
         cell.emissionRange = .pi / 4
         cell.emissionLongitude = .pi / 2
@@ -370,9 +779,8 @@ private class ConfettiContainerView: UIView {
         cell.spinRange = 3
         cell.scale = 0.22
         cell.scaleRange = 0.12
-        cell.yAcceleration = 130
+        cell.yAcceleration = 135
         cell.color = color.withAlphaComponent(0.9).cgColor
-
         let renderer = UIGraphicsImageRenderer(size: CGSize(width: 14, height: 9))
         let img = renderer.image { ctx in
             color.setFill()
@@ -384,24 +792,21 @@ private class ConfettiContainerView: UIView {
 
     private func setupEmitter() {
         emitter.emitterPosition = CGPoint(x: bounds.width / 2, y: -10)
-        emitter.emitterSize = CGSize(width: bounds.width, height: 1)
-        emitter.emitterShape = .line
-        emitter.renderMode = .oldestFirst
+        emitter.emitterSize   = CGSize(width: bounds.width, height: 1)
+        emitter.emitterShape  = .line
+        emitter.renderMode    = .oldestFirst
 
-        let colors: [UIColor] = [
-            UIColor(red: 1.00, green: 0.42, blue: 0.42, alpha: 1),
+        let extras: [UIColor] = [
             UIColor(red: 1.00, green: 0.85, blue: 0.24, alpha: 1),
             UIColor(red: 0.42, green: 0.80, blue: 0.47, alpha: 1),
-            UIColor(red: 0.31, green: 0.80, blue: 0.77, alpha: 1),
             UIColor(red: 0.66, green: 0.33, blue: 0.97, alpha: 1),
             UIColor(red: 0.96, green: 0.45, blue: 0.71, alpha: 1),
             UIColor(red: 1.00, green: 0.56, blue: 0.10, alpha: 1),
         ]
-
-        emitter.emitterCells = colors.map { makeCell(color: $0) }
+        emitter.emitterCells = ([winnerColor, winnerColor] + extras).map { makeCell(color: $0) }
         layer.addSublayer(emitter)
 
-        DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) { [weak self] in
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) { [weak self] in
             self?.emitter.birthRate = 0
         }
     }
