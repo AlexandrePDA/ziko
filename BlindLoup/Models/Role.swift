@@ -147,6 +147,14 @@ extension RoleType {
             result[playerID] = pool[i % pool.count]
         }
 
+        // Garantir au moins un mélomane par partie
+        if !result.values.contains(.melomane) {
+            let candidates = result.filter { $0.value != .complice }.keys
+            if let id = candidates.randomElement() {
+                result[id] = .melomane
+            }
+        }
+
         return result
     }
 }
