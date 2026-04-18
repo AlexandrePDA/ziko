@@ -57,12 +57,14 @@ struct BlindTestView: View {
     @Environment(AudioPlayerService.self) private var audioService
     let roundIndex: Int
 
+    @State private var showAirPlayTip = false
+
     private var round: GameRound? {
         vm.rounds.indices.contains(roundIndex) ? vm.rounds[roundIndex] : nil
     }
 
     var body: some View {
-        ZStack {
+        ZStack(alignment: .top) {
             BlobBackground()
 
             if let round {
@@ -130,6 +132,82 @@ struct BlindTestView: View {
                     .padding(.bottom, 32)
                 }
             }
+
+            // AirPlay tip — premier tour uniquement, une seule fois
+            if showAirPlayTip {
+                AirPlayTipBanner {
+                    dismissAirPlayTip()
+                }
+                .padding(.horizontal, 16)
+                .padding(.top, 12)
+                .transition(.move(edge: .top).combined(with: .opacity))
+            }
         }
+        .onAppear {
+            guard roundIndex == 0 else { return }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+                withAnimation(.spring(response: 0.5, dampingFraction: 0.75)) {
+                    showAirPlayTip = true
+                }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 10.0) {
+                    dismissAirPlayTip()
+                }
+            }
+        }
+    }
+
+    private func dismissAirPlayTip() {
+        withAnimation(.easeOut(duration: 0.3)) { showAirPlayTip = false }
+    }
+}
+
+// MARK: - AirPlay Tip Banner
+
+private struct AirPlayTipBanner: View {
+    let onDismiss: () -> Void
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 14) {
+            Image(systemName: "airplayvideo")
+                .font(.title2.weight(.semibold))
+                .foregroundStyle(Color.appAccent)
+                .frame(width: 32)
+                .padding(.top, 2)
+
+            VStack(alignment: .leading, spacing: 5) {
+                Text("Le crime se regarde en grand.")
+                    .font(.subheadline.weight(.bold))
+                    .foregroundStyle(Color.appWhite)
+
+                Text("Connecte ton écran via AirPlay")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(Color.appAccent)
+
+                Text("Les verdicts se savourent mieux quand tout le monde les voit tomber en même temps.")
+                    .font(.caption)
+                    .foregroundStyle(Color.appGreyLight)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.top, 1)
+            }
+
+            Button(action: onDismiss) {
+                Image(systemName: "xmark")
+                    .font(.caption.weight(.bold))
+                    .foregroundStyle(Color.appGrey)
+                    .frame(width: 26, height: 26)
+                    .background(Color.appGrey.opacity(0.15))
+                    .clipShape(Circle())
+            }
+            .accessibilityLabel("Fermer le conseil AirPlay")
+        }
+        .padding(16)
+        .background(.ultraThinMaterial)
+        .background(Color.appSurface.opacity(0.85))
+        .clipShape(RoundedRectangle(cornerRadius: 18))
+        .overlay(
+            RoundedRectangle(cornerRadius: 18)
+                .strokeBorder(Color.appAccent.opacity(0.2), lineWidth: 1)
+        )
+        .shadow(color: .black.opacity(0.35), radius: 20, x: 0, y: 6)
     }
 }
